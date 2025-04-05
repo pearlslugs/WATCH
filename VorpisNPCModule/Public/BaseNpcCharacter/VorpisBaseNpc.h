@@ -28,16 +28,13 @@ public:
 	AVorpisBaseNpc();
 	// ai timers
 	FTimerHandle ResetAttackCoooldownTimer;
-	float ResetAttackCooldownTime = 5.0f;
+	float ResetAttackCooldownTime = 3.0f;
 	FTimerDynamicDelegate ResetAttackCooldownDelegate;
 	UFUNCTION()
 	void StartAttackCoolDown();
 	UFUNCTION()
 	void ResetAttackCooldown();
-
 	FTimerHandle StrafeTimer;
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Npc")
 	AActor* SplinePathActor;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
@@ -49,7 +46,12 @@ public:
 	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
 	// combat 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Attack();
+	UPROPERTY()
+	bool AttackStarted;
+	UFUNCTION(BlueprintCallable)
+	void ClearAttackStarted() { AttackStarted = false; };
 
 
 protected:
@@ -81,9 +83,6 @@ protected:
 	float StrafeTime = 0.01f;
 	UFUNCTION()
 	void Strafe();
-
-
-
 private:
 
 public:
@@ -98,6 +97,7 @@ public:
 	// interfaces
 	virtual AActor* GetSplinePathAsActor() override;
 	virtual ECharacterPersonality InterfaceGetPersonality() override;
+	virtual void RecieveAttackSignal() override;
 	virtual void CreateDialogueWidget() override;
 	virtual void InterfaceAttack() override;
 	virtual bool IsNpc_Implementation() override { return true; };
@@ -105,4 +105,6 @@ public:
 	virtual void InterfaceSetCombatState_Implementation(uint8 state) {};
 	virtual void StartStrafing();
 	virtual void StopStrafing();
+	virtual bool RecieveAttack(FFinishedAttackStruct AttackData) override;
+	virtual void InterfaceClearAttacking_Implementation() {};
 };

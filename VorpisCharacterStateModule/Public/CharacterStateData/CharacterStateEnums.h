@@ -2,6 +2,11 @@
 
 #include "CharacterStateEnums.generated.h"
 
+// idk what i was thinking, we need to consolidate ai 
+// combat state and combat state and then make the set combat state function update the blackboard
+
+// stupid lmao
+
 UENUM(BlueprintType)
 enum class EGeneralState : uint8
 {
@@ -26,8 +31,8 @@ enum class ECombatState : uint8
 	ECS_Throwing UMETA(DisplayName = "Throwing"),
 	ECS_Kicking UMETA(DisplayName = "Kicking"),
 	ECS_Parrying UMETA(DisplayName = "Parrying"),
-	EGS_HitStunned UMETA(DisplayName = "HitStunned"),
-	EGS_BlockStunned UMETA(DisplayName = "BlockStunned"),
+	ECS_HitStunned UMETA(DisplayName = "HitStunned"),
+	ECS_BlockStunned UMETA(DisplayName = "BlockStunned"),
 };
 
 UENUM(BlueprintType)

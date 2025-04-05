@@ -6,7 +6,7 @@
 #include "BlackBoardNames/BlackBoardNames.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-
+// need ot  start usng this if i am not
 //enum class EAiMainBehavior : uint8
 //{
 //	AMB_Fighting UMETA(DisplayName = "Fighting"),				    // 0
@@ -55,9 +55,21 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	
 	uint8 EnemyBehavior = GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiMainBehavior);
 	uint8 CombatState = GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiCombatState);
-	if (CombatState == 2 || CombatState == 3 || CombatState == 4 || CombatState == 5
-		|| CombatState == 7 || CombatState == 8) {
-		
+	// if stuck strafing or attacking
+	// all of the below logic should only be if they are fighting
+	// make combat logic funciton to call
+	if (CombatState == 2 || CombatState == 4 ) {
+		if (!TimerCalled)
+		{
+			TimerCalled = true;
+			GetWorld()->GetTimerManager().SetTimer(FreeUpNpcTimer, this, &UNpcDecisionService::FreeUpCharacter, FreeUpNpcTimerRate, false);
+		}
+	}
+	// dont reset if starting strafe or starting attack
+	if (CombatState == 1 || CombatState == 3 || CombatState == 5
+		|| CombatState == 7 || CombatState == 8)
+	{
+		// dont return, it messes up
 	}
 	else {
 		// print combat state
@@ -72,12 +84,15 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			else
 			{
 				float Random = FMath::FRandRange(0.0f, 1.0f);
-				if (Random <= 0.5f)
+				bool OnCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnAtackCoolDown);
+				if (Random <= 0.65f || OnCoolDown)
 				{
+					// strafe
 					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
 				}
 				else
 				{
+					// attack
 					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 3);
 				}
 			}
@@ -96,4 +111,16 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		// if player health is low
 		  // maybe offer mercy
 	}
+}
+
+void UNpcDecisionService::FreeUpCharacter()
+{
+	uint8 CombatState = GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiCombatState);
+	if (CombatState == 2 || CombatState == 4)
+	{
+
+		GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);
+		GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
+	}
+	TimerCalled = false;
 }

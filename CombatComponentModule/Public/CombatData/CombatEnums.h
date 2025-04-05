@@ -11,3 +11,12 @@ enum class ECombatPosition : uint8
 	ECP_Low UMETA(DisplayName = "Low"),
 	ECP_None UMETA(DisplayName = "None")
 };
+
+UENUM(BlueprintType)
+enum class EDodgeDirection : uint8
+{
+	ESMD_Forward UMETA(DisplayName = "Forward"),
+	ESMD_Backward UMETA(DisplayName = "Backward"),
+	ESMD_Left UMETA(DisplayName = "Left"),
+	ESMD_Right UMETA(DisplayName = "Right"),
+};

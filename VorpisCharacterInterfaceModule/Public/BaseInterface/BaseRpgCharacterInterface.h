@@ -27,6 +27,7 @@ public:
 	virtual USkinnedMeshComponent* GetSkinnedMesh();
 	virtual bool IsDead();
 	virtual bool RecieveAttack(FFinishedAttackStruct AttackData) { return false; };
+	virtual void RecieveAttackSignal() {};
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void InterfacePopulateInitialAttackData(FInitialAttackData InitialAttackData);
@@ -46,4 +47,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void InterfaceSetCharacterCombatState(ECombatState NewState);
 	virtual void InterfaceSetCharacterCombatState_Implementation(ECombatState NewState);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void RecieveEnemyCombatPosition(ECombatPosition EnemyPosition);
+	virtual void RecieveEnemyCombatPosition_Implementation(ECombatPosition EnemyPosition) {};
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	bool BreakHitStun();
+	virtual bool BreakHitStun_Implementation() { return false; };
 };

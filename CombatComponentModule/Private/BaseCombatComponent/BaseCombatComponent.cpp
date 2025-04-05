@@ -22,6 +22,7 @@ void UBaseCmbatComponent::BeginPlay()
 
 	CallUnlockPosition.BindUFunction(this, FName("ResetPositionLock"));
 	CallResetCombo.BindUFunction(this, FName("ResetCombo"));
+	CallResetHitCount.BindUFunction(this, FName("ResetHitCount"));
 	// ...
 	
 }
@@ -55,13 +56,20 @@ void UBaseCmbatComponent::SetCombatPosition(ECombatPosition NewCombatPosition)
 	OnCombatPositionChange.Broadcast(CombatPosition);
 }
 
+void UBaseCmbatComponent::IncreaseHitCount()
+{
+	HitCount++;
+	GetWorld()->GetTimerManager().SetTimer(HitTimer, CallResetHitCount, ResetHitCountTimerTime, false);
+}
+
 ECombatPosition UBaseCmbatComponent::GetCombatPositionFromVector2D(FVector2D Direction)
 {
 	if (PositionLock) return ECombatPosition::ECP_None;
 	if (Direction.X < 0.2f && Direction.Y < 0.2) return ECombatPosition::ECP_None;
 	if (Direction.X > 0.5 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y)) return ECombatPosition::ECP_Right;
-	if (Direction.X < -0.5 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y)) return ECombatPosition::ECP_Left;
+	if (Direction.X < -0.3 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y) - 0.1) return ECombatPosition::ECP_Left;
 	if (Direction.Y > 0.5) return ECombatPosition::ECP_High;
+	///if (Direction.Y < -0.3) return ECombatPosition::ECP_Low; we need to add low back, just do the back and forth attack
 	return ECombatPosition::ECP_None;
 }
 

@@ -35,6 +35,7 @@ void AVorpisBasePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Inpu
 		EnhancedInput->BindAction(AVorpisBasePlayerCharacter::PrimaryAttackAction, ETriggerEvent::Triggered, this, &AVorpisBasePlayerCharacter::BufferPrimaryAttack);
 		EnhancedInput->BindAction(AVorpisBasePlayerCharacter::LockOnAction, ETriggerEvent::Triggered, this, &AVorpisBasePlayerCharacter::LockOn);
 		EnhancedInput->BindAction(AVorpisBasePlayerCharacter::MenuSelectAction, ETriggerEvent::Triggered, this, &AVorpisBasePlayerCharacter::SelectInMenu);
+		MoveActionBinding = &EnhancedInput->BindActionValue(MoveAction);
 	}
 }
 
@@ -124,7 +125,7 @@ void AVorpisBasePlayerCharacter::InputBufferKey(EBufferKey Key)
 void AVorpisBasePlayerCharacter::Dodge()
 {
 	if (LockOnComponent->GetIsLockedOn()) {
-		// use dodge system
+		AVorpisBasePlayerCharacter::BaseDodge();
 	} else {
 		static constexpr auto PlayRate{ 1.3f };
 		StartRolling(PlayRate);
@@ -164,6 +165,17 @@ void AVorpisBasePlayerCharacter::OnComboFinished()
 void AVorpisBasePlayerCharacter::PrimaryAttack()
 {
 	int Combo = 0;
+	if (IsValid(LockOnComponent->TargetedActor))
+	{
+		IBaseRpgCharacterInterface* InterfaceActor = Cast<IBaseRpgCharacterInterface>(LockOnComponent->TargetedActor);
+			if (InterfaceActor)
+			{
+				InterfaceActor->RecieveAttackSignal();
+			}
+	}
+	else {
+		// get sphere sweep and send like that
+	}
 	ECombatPosition Position = CombatComponent->GetCombatPosition();
 		if (Position == ECombatPosition::ECP_High) {
 			Combo = CombatComponent->GetComboCount();
@@ -242,7 +254,6 @@ void AVorpisBasePlayerCharacter::CloseInputBuffer_Implementation(){}
 void AVorpisBasePlayerCharacter::OpenInputBuffer_Implementation(){}
 void AVorpisBasePlayerCharacter::InterfaceSetCharacterGeneralState_Implementation(EGeneralState NewState){SetCharacterGeneralState(NewState);}
 void AVorpisBasePlayerCharacter::InterfaceSetCharacterCombatState_Implementation(ECombatState NewState){SetCharacterCombatState(NewState);}
-void AVorpisBasePlayerCharacter::InterfaceToggleWeaponCollision_Implementation(bool State){}
 void AVorpisBasePlayerCharacter::RotateTowardsTarget_Implementation(bool State){}
 void AVorpisBasePlayerCharacter::ToggleSelectedEquipmentEquipped_Implementation(bool State){}
 void AVorpisBasePlayerCharacter::InterfacePopulateInitialAttackData_Implementation(FInitialAttackData InitialAttackData){}

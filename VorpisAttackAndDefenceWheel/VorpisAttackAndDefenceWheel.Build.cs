@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class VorpisControllers : ModuleRules
+public class VorpisAttackAndDefenceWheel : ModuleRules
 {
-	public VorpisControllers (ReadOnlyTargetRules Target) : base(Target)
+	public VorpisAttackAndDefenceWheel (ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -26,17 +26,11 @@ public class VorpisControllers : ModuleRules
 			new string[]
 			{
 				"Core",
-            "ALSExtras",
-            "InputCore",
-            "EnhancedInput",
-            "VorpisWidgetInterfaceModule",
-            "VorpisCharacterInterfaceModule",
             "UMG",
-            "AIModule",
-            "VorpisAttackAndDefenceWheel"
+            "CombatComponentModule",
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+         );
 			
 		
 		PrivateDependencyModuleNames.AddRange(
@@ -46,10 +40,10 @@ public class VorpisControllers : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-            "EnhancedInput",
+            "UMG",
 				// ... add private dependencies that you statically link with here ...
 			}
-			);
+         );
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(

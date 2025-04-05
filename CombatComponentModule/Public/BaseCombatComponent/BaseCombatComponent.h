@@ -29,10 +29,20 @@ public:
 	//combo 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	int ComboCount = 0;
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
+	int HitCount = 0;
+	UFUNCTION()
+	void ResetHitCount() { HitCount = 0; };
+	UFUNCTION()
+	void IncreaseHitCount();
+	FTimerHandle HitTimer;
+	float ResetHitCountTimerTime = 3.f;
+	FTimerDynamicDelegate CallResetHitCount;
+
 	UFUNCTION()
 	int GetComboCount() { return ComboCount; };
 	FTimerHandle ComboTimer;
-	float ComboResetTime = 2.f;
+	float ComboResetTime = 2.2f;
 	FTimerDynamicDelegate CallResetCombo;
 	UFUNCTION()
 	void ResetCombo();

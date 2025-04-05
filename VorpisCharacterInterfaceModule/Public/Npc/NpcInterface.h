@@ -44,5 +44,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void InterfaceSetCombatState(uint8 state);
 	virtual void InterfaceSetCombatState_Implementation(uint8 state) {};
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void InterfaceClearAttacking();
+	virtual void InterfaceClearAttacking_Implementation() {};
 
 };

@@ -20,7 +20,6 @@ class VORPISCONTROLLERS_API AVorpisPlayerController : public APlayerController
 
 public:
 	AVorpisPlayerController();
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")
 	TObjectPtr<UInputMappingContext> ControllerMapping;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")

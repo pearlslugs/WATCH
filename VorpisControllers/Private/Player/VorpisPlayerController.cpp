@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "BaseInterface/BaseWidgetInterface.h"
 #include "PlayerCharacter/VorpisPlayerCharacterInterface.h"
+#include "Widget/BaseAttackAndDefenseWidget.h"
 #include "EnhancedInputSubsystems.h"
 
 AVorpisPlayerController::AVorpisPlayerController()

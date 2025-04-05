@@ -17,7 +17,6 @@
 #include "LockOnComponent/LockOnComponent.h"
 #include "CharacterStateData/CharacterStateEnums.h"
 #include "PlayerCharacter/VorpisPlayerCharacterInterface.h"
-#include "WeaponCollisionComponent/WeaponCollisionComponent.h"
 #include "InputBufferComponent/VorpisUncursedInputBufferComponent.h"
 #include "VorpisBasePlayerCharacter.generated.h"
 
@@ -126,7 +125,6 @@ public:
 	virtual void OpenInputBuffer_Implementation() override;
 	virtual void InterfaceSetCharacterGeneralState_Implementation(EGeneralState NewState) override;
 	virtual void InterfaceSetCharacterCombatState_Implementation(ECombatState NewCombatState) override;
-	virtual void InterfaceToggleWeaponCollision_Implementation(bool State) override;
 	virtual void RotateTowardsTarget_Implementation(bool State) override;
 	virtual void ToggleSelectedEquipmentEquipped_Implementation(bool State) override;
 	virtual void InterfacePopulateInitialAttackData_Implementation(FInitialAttackData InitialAttackData) override;

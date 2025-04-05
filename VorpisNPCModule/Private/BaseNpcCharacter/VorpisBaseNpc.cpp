@@ -24,7 +24,6 @@ AVorpisBaseNpc::AVorpisBaseNpc()
 	AllStrafeDirections.Add(EStrafingMovementDirection::ESMD_Left);
 	AllStrafeDirections.Add(EStrafingMovementDirection::ESMD_Right);
 	AllStrafeDirections.Add(EStrafingMovementDirection::ESMD_Backward);
-
 }
 
 void AVorpisBaseNpc::BeginPlay()
@@ -73,15 +72,36 @@ void AVorpisBaseNpc::CreateDialogueWidget()
 
 void AVorpisBaseNpc::Attack()
 {
+	if (AttackStarted) return;
+	bool OnAttackCoolDown = GetBlackboardComponent()->GetValueAsBool("OnAtackCoolDown");
+	if (OnAttackCoolDown) {
+		if (!GetWorld()->GetTimerManager().IsTimerActive(ResetAttackCoooldownTimer)) {
+			GetWorld()->GetTimerManager().SetTimer(ResetAttackCoooldownTimer, this, &AVorpisBaseNpc::ResetAttackCooldown, ResetAttackCooldownTime, false);
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "On Cool Down");
+		GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)0);
+		GetBlackboardComponent()->SetValueAsInt("HitCounter", 0);
+		return;
+	}
+	uint8 CurrentCombatState = GetBlackboardComponent()->GetValueAsEnum("CombatState");
+	FString CombatState = FString::FromInt(CurrentCombatState);
+	if (CurrentCombatState != (uint8)EAiCombatState::EACS_StartAttacking)
+	{
+		return;
+	}
+	GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_Attacking);
 	int Combo = 0;
 	int MaxHitCounter = GetBlackboardComponent()->GetValueAsInt("MaxHitCounter");
 	int HitCounter = GetBlackboardComponent()->GetValueAsInt("HitCounter");
-	if (MaxHitCounter >= HitCounter) {
+	if (HitCounter > MaxHitCounter) {
 		StartAttackCoolDown();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "hit max reached");
 		// he should strafe, dodge or stand his ground
 		// right now he goes back to the idle state
+		GetBlackboardComponent()->SetValueAsInt("HitCounter", 0);
 		AIController->GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_None);
 	}
+	AttackStarted = true;
 	ECombatPosition Position = CombatComponent->GetCombatPosition();
 	if (Position == ECombatPosition::ECP_High) {
 		Combo = CombatComponent->GetComboCount();
@@ -90,14 +110,16 @@ void AVorpisBaseNpc::Attack()
 	if (IsValid(Montage)) {
 		CombatComponent->IncrimentComboCount();
 		PlayAnimMontage(Montage);
-		GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_Attacking);
 		GetBlackboardComponent()->SetValueAsInt("HitCounter", HitCounter + 1);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "Good");
 	}
 }
 
 void AVorpisBaseNpc::StartAttackCoolDown()
 {
+	GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_None);
 	GetBlackboardComponent()->SetValueAsBool("OnAtackCoolDown", true);
+	GetBlackboardComponent()->SetValueAsInt("HitCounter", 0);
 	GetWorld()->GetTimerManager().SetTimer(ResetAttackCoooldownTimer, this, &AVorpisBaseNpc::ResetAttackCooldown, ResetAttackCooldownTime, false);
 }
 
@@ -109,6 +131,7 @@ void AVorpisBaseNpc::ResetAttackCooldown()
 
 void AVorpisBaseNpc::InterfaceAttack()
 {
+	// slightly delay for checking state change
 	AVorpisBaseNpc::Attack();
 }
 
@@ -133,6 +156,8 @@ void AVorpisBaseNpc::ResetAvailableStrafeDirections()
 {
 	AvailableStrafeDirections.Empty();
 	AvailableStrafeDirections.Append(AllStrafeDirections);
+	GetBlackboardComponent()->SetValueAsFloat("StrafeTime", 0.0f);
+	GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_None);
 }
 
 UBlackboardComponent* AVorpisBaseNpc::GetBlackboardComponent()
@@ -145,9 +170,18 @@ void AVorpisBaseNpc::StopStrafing()
 
 void AVorpisBaseNpc::Strafe()
 {
+	if (!GEngine) {
+		return;
+	}
 	float CurrentStrafeTime = GetBlackboardComponent()->GetValueAsFloat("StrafeTime");
 	float MaxStrafeTime = GetBlackboardComponent()->GetValueAsFloat("MaxStrafeTime");
 	AActor* Target = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject("Target"));
+	float DistanceToTarget = FVector::Dist(GetActorLocation(), Target->GetActorLocation());
+	if (DistanceToTarget > 1400)
+	{
+		ResetAvailableStrafeDirections();
+		return;
+	}
 	if (!Target)
 	{
 		ResetAvailableStrafeDirections();
@@ -156,7 +190,6 @@ void AVorpisBaseNpc::Strafe()
 	if (CurrentStrafeTime >= MaxStrafeTime)
 	{
 		ResetAvailableStrafeDirections();
-		AIController->GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_None);
 		return;
 	}
 	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
@@ -169,7 +202,6 @@ void AVorpisBaseNpc::Strafe()
 	{
 		case EStrafingMovementDirection::ESMD_Left:
 			StrafeDirectionVector = FGeneralUtils::ClampVector(GetActorRightVector() * -1, -0.3f, 0.3f);
-
 			AddMovementInput(StrafeDirectionVector);
 			break;
 		case EStrafingMovementDirection::ESMD_Right:
@@ -182,7 +214,7 @@ void AVorpisBaseNpc::Strafe()
 			break;
 		break;
 	}
-	float AmountToAdd = FMath::RandRange(0.005f, 0.01f);
+	float AmountToAdd = FMath::RandRange(0.005f, 0.01f) + (CurrentStrafeDirection == EStrafingMovementDirection::ESMD_Backward) ? 0.005f : 0.f;
 	GetBlackboardComponent()->SetValueAsFloat("StrafeTime", CurrentStrafeTime + AmountToAdd);
 	GetWorld()->GetTimerManager().SetTimer(StrafeTimer, this, &AVorpisBaseNpc::Strafe, StrafeTime, false);
 }
@@ -193,6 +225,43 @@ ECharacterPersonality AVorpisBaseNpc::InterfaceGetPersonality()
 }
 AActor* AVorpisBaseNpc::GetSplinePathAsActor(){	return SplinePathActor; }
 
+bool AVorpisBaseNpc::RecieveAttack(FFinishedAttackStruct AttackData)
+{
+	ECombatPosition CharacterPosition = CombatComponent->GetCombatPosition();
+	ECombatPosition AdjustedEnemyPosition = AdjustCombatPosition(AttackData.AttackData.InitialAttackData.Position);
+	// instead of false, we need to  see if they have a weapon or shield to block with
+	if (AdjustedEnemyPosition == CharacterPosition) {
+		// is parrying?
+			// get parry reaction
+		// chamber, in place dodge, ect?
+		if (CharacterStateComponent->GetCharacterCombatState() == ECombatState::ECS_Dodging) {
+			return false;
+		}
+		UAnimMontage* BlockMontage = MontageManagerComponent->GetBlockReactionMontage(CharacterPosition, false);
+		if (BlockMontage) {
+			PlayAnimMontage(BlockMontage);
+		}
+	}
+	else {
+		UAnimMontage* HitMontage = MontageManagerComponent->GetHitReactionMontage(AttackData.AttackData.InitialAttackData.Position);
+		GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)EAiCombatState::EACS_HitStunned);
+		if (HitMontage) {
+			PlayAnimMontage(HitMontage);
+			ABaseRpgCharacter::SpawnBloodAtLocation(AttackData.HitTraceResults.HitLocation);
+		}
+	}
+	return true;
+}
+
+void AVorpisBaseNpc::RecieveAttackSignal()
+{
+	// if something something, we need some kind of tracking
+	float RaondomFloat = FMath::FRandRange(0.f, 1.f);
+	if (RaondomFloat > 0.65)
+	{
+		DodgeInDirection(EDodgeDirection::ESMD_Backward);
+	}
+}
 
 
 // enum to string

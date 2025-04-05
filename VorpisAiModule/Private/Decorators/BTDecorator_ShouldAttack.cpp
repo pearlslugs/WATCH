@@ -25,12 +25,9 @@ bool UBTDecorator_ShouldAttack::CalculateRawConditionValue(UBehaviorTreeComponen
 	{
 		return false;
 	}
-
-	int MaxHitCounter = BlackboardComponent->GetValueAsInt(BBKeys::MaxHitCounter);
-	int HitCounter = BlackboardComponent->GetValueAsInt(BBKeys::HitCounter);
 	uint8 CombatState = BlackboardComponent->GetValueAsEnum(BBKeys::AiCombatState);
 
-	if (CombatState == 1 && MaxHitCounter >= HitCounter)
+	if (CombatState == 1)
 	{
 		return true;
 	}

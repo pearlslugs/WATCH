@@ -64,8 +64,8 @@ void UWeaponCollisionComponent::TraceForHits()
 		FVector StartLocation = ItemStaticMesh->GetSocketLocation("StartSocket");
 		FVector EndLocation = ItemStaticMesh->GetSocketLocation("EndSocket");
 
-		float CapsuleRadius = 10.0f;
-		float CapsuleHalfHeight = 10.0f;
+		float CapsuleRadius = 15.0f;
+		float CapsuleHalfHeight = 15.0f;
 
 		bool bHit = UKismetSystemLibrary::CapsuleTraceMulti(
 			this,
@@ -76,7 +76,7 @@ void UWeaponCollisionComponent::TraceForHits()
 			UEngineTypes::ConvertToTraceType(ECC_Pawn),
 			false, 
 			ActorsToIgnore,
-			EDrawDebugTrace::None,
+			EDrawDebugTrace::ForOneFrame,
 			OutHits,
 			true
 		);
@@ -96,7 +96,6 @@ void UWeaponCollisionComponent::TraceForHits()
 						FHitTraceResults CurrentHitTraceResults;
 						CurrentHitTraceResults.HitLocation = Hit.ImpactPoint;
 						CurrentHitTraceResults.HitBone = InterfaceActor->GetSkinnedMesh()->FindClosestBone(Hit.ImpactPoint);
-
 						OnWeaponHitActor.Broadcast(HitActor, CurrentHitTraceResults);
 					}
 				}

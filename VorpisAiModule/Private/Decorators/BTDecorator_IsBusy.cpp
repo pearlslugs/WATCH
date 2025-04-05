@@ -16,6 +16,8 @@
 //EACS_Strafing UMETA(DisplayName = "Strafing"),				    // 4
 //EACS_Dodging UMETA(DisplayName = "Dodging"),					    // 5
 //EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"),  // 6
+//EACS_HitStunned UMETA(DisplayName = "HitStunned"),				 // 7
+//EACS_BlockStunned UMETA(DisplayName = "BlockStunned"),		    // 8
 //};
 
 UBTDecorator_IsBusy::UBTDecorator_IsBusy()

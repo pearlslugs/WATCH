@@ -4,6 +4,9 @@
 #include "RpgCharacter/BaseRpgCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "DataAsset/ItemDataAsset.h"
+#include "NiagaraComponent.h"
+#include "GeneralData/GeneralData.h"
+#include "NiagaraFunctionLibrary.h"
 #include "EnhancedInputSubsystems.h"
 
 ABaseRpgCharacter::ABaseRpgCharacter()
@@ -53,6 +56,47 @@ void ABaseRpgCharacter::UnequipItem(FItemData Item)
 	}
 }
 
+void ABaseRpgCharacter::BaseDodge()
+{
+	const FVector2D InputValue = MoveActionBinding->GetValue().Get<FVector2D>();
+	float AbsoluteY = FMath::Abs(InputValue.Y);
+	float AbsoluteX = FMath::Abs(InputValue.X);
+	if (AbsoluteX < 0.1 && AbsoluteY < 0.1) {
+		DodgeInDirection(EDodgeDirection::ESMD_Backward);
+		return;
+	}
+	if (AbsoluteY > AbsoluteX) {
+		if (InputValue.Y > 0) {
+			DodgeInDirection(EDodgeDirection::ESMD_Forward);
+			return;
+		}
+		else {
+			DodgeInDirection(EDodgeDirection::ESMD_Backward);
+			return;
+		}
+	}
+	else {
+		if (InputValue.X > 0) {
+			DodgeInDirection(EDodgeDirection::ESMD_Right);
+			return;
+		}
+		else {
+			DodgeInDirection(EDodgeDirection::ESMD_Left);
+			return;
+		}
+	}
+}
+
+void ABaseRpgCharacter::DodgeInDirection(EDodgeDirection DodgeDirection)
+{
+	CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_Dodging);
+	UAnimMontage* DodgeMontage = MontageManagerComponent->GetDodgeMontage(DodgeDirection);
+	if (IsValid(DodgeMontage)) {
+		CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_Dodging);
+		PlayAnimMontage(DodgeMontage);
+	}
+}
+
 void ABaseRpgCharacter::CreateOrDestroyEquipmentMeshes(FItemData NewItem, bool CreateOrDestroy)
 {
 	if (CreateOrDestroy) {
@@ -92,33 +136,55 @@ bool ABaseRpgCharacter::IsDead()
 {
 	return false;
 }
-// we need 
+
+
+void ABaseRpgCharacter::DestroyNiagaraComponent(UNiagaraComponent* ComponentToDestroy)
+{
+	ComponentToDestroy->DestroyComponent();
+}
+
+void ABaseRpgCharacter::SpawnBloodAtLocation(FVector Location)
+{
+	UNiagaraSystem* SelectedPartical = BloodParticals[FMath::RandRange(0, BloodParticals.Num() - 1)];
+	UNiagaraComponent* NewComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SelectedPartical, Location);
+	NewComponent->OnSystemFinished.AddDynamic(this, &ABaseRpgCharacter::DestroyNiagaraComponent);
+}
+
+ECombatPosition ABaseRpgCharacter::AdjustCombatPosition(ECombatPosition CurrentPosition)
+{
+	if (CurrentPosition == ECombatPosition::ECP_High) {
+		return ECombatPosition::ECP_High;
+	}
+	else if (CurrentPosition == ECombatPosition::ECP_Left) {
+		return ECombatPosition::ECP_Right;
+	}
+	return ECombatPosition::ECP_Left;
+}
+
 bool ABaseRpgCharacter::RecieveAttack(FFinishedAttackStruct AttackData)
 {
 	ECombatPosition CharacterPosition = CombatComponent->GetCombatPosition();
+	ECombatPosition AdjustedPosition = ABaseRpgCharacter::AdjustCombatPosition(AttackData.AttackData.InitialAttackData.Position);
 	// instead of false, we need to  see if they have a weapon or shield to block with
-	if (AttackData.AttackData.InitialAttackData.Position == CharacterPosition && false) {
+	if (AdjustedPosition == CharacterPosition) {
 		// is parrying?
 			// get parry reaction
 		// chamber, in place dodge, ect?
 		if (CharacterStateComponent->GetCharacterCombatState() == ECombatState::ECS_Dodging) {
 			return false;
 		}
-		if (CombatComponent->GetCombatPosition() == AttackData.AttackData.InitialAttackData.Position) {
-			UAnimMontage* BlockMontage = MontageManagerComponent->GetBlockReactionMontage(CharacterPosition, true);
-			if (BlockMontage) {
-				PlayAnimMontage(BlockMontage);
-				return false;
-			}
-		}
 		UAnimMontage* BlockMontage = MontageManagerComponent->GetBlockReactionMontage(CharacterPosition, false);
 		if (BlockMontage) {
+			CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_BlockStunned);
 			PlayAnimMontage(BlockMontage);
 		} 
 	} else {
 		UAnimMontage* HitMontage = MontageManagerComponent->GetHitReactionMontage(AttackData.AttackData.InitialAttackData.Position);
 		if (HitMontage) {
+			CombatComponent->IncreaseHitCount();
 			PlayAnimMontage(HitMontage);
+			CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_HitStunned);
+			ABaseRpgCharacter::SpawnBloodAtLocation(AttackData.HitTraceResults.HitLocation);
 		}
 	}
 	return true;

@@ -29,16 +29,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	UAnimMontage* GetBlockReactionMontage(ECombatPosition CombatPosition, bool UseAlternative);
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
+	UAnimMontage* GetDodgeMontage(EDodgeDirection DodgeDirection);
+
+	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	void SetCurrentCombatMontages(FDirectionalMontages Montages) { CurrentCombatMontages = Montages; }
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	void SetHitReactionMontages(FDirectionalMontages Montages) { HitReactionMontages = Montages; }
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	void SetBlockReactionMontages(FDirectionalMontages Montages) { BlockReactionMontages = Montages; }
+	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
+	void SetDodgeMontages(TMap<EDodgeDirection, UAnimMontage*> NewDodges) { DodgeMontages = NewDodges; };
 
 	UFUNCTION(BlueprintCallable, Category = "Ownere Mesh")
 	void SetOwnerMesh(USkeletalMeshComponent* Mesh) { OwnerMesh = Mesh; }
 	UFUNCTION(BlueprintCallable, Category = "Owner Mesh")
 	void PlaySelectedMontage(UAnimMontage* Montage);
+
 
 protected:
 	// Called when the game starts
@@ -50,6 +56,8 @@ protected:
 	FDirectionalMontages HitReactionMontages;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")
 	FDirectionalMontages BlockReactionMontages;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")
+	TMap<EDodgeDirection, UAnimMontage*> DodgeMontages;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Owner Mesh")
 	USkeletalMeshComponent* OwnerMesh;

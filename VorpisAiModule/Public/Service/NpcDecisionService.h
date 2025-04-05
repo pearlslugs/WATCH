@@ -19,6 +19,11 @@ class VORPISAIMODULE_API UNpcDecisionService : public UBTService
 {
 	GENERATED_BODY()
 public:
+
+	FTimerHandle FreeUpNpcTimer;
+	float FreeUpNpcTimerRate = 3.f;
+	bool TimerCalled = false;
+
 	UNpcDecisionService(const FObjectInitializer& ObjectInitializer);
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	UFUNCTION()
@@ -37,6 +42,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NpcService")
 	float AttackDistance = 355.f;
+
+	UFUNCTION()
+	void FreeUpCharacter();
 
 
 protected:

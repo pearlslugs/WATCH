@@ -86,3 +86,14 @@ void UMontageManagerComponent::PlaySelectedMontage(UAnimMontage* Montage)
 		OwnerMesh->GetAnimInstance()->Montage_Play(Montage);
 	}
 }
+
+UAnimMontage* UMontageManagerComponent::GetDodgeMontage(EDodgeDirection DodgeDirection)
+{
+	if (DodgeMontages.Num() > 0) {
+		UAnimMontage* Montage = DodgeMontages[DodgeDirection];
+		if (IsValid(Montage)) {
+			return Montage;
+		}
+	}
+	return nullptr;
+}

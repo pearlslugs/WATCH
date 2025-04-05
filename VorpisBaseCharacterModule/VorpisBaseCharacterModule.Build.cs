@@ -24,13 +24,14 @@ public class VorpisBaseCharacterModule : ModuleRules
          "VorpisCharacterStateModule",
          "VorpisEquipmentModule",
          "VorpisInteractableModule",
-         "MontageManagerModule"
+         "MontageManagerModule",
+         "Niagara"
       });
 
         PrivateDependencyModuleNames.AddRange(new[]
         {
             "EnhancedInput",
-
+            "Niagara",
 
         });
 
