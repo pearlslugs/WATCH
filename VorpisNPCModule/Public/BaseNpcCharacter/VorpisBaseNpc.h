@@ -30,6 +30,14 @@ public:
 	FTimerHandle ResetAttackCoooldownTimer;
 	float ResetAttackCooldownTime = 3.0f;
 	FTimerDynamicDelegate ResetAttackCooldownDelegate;
+
+	FTimerHandle ClearAttackStartedTimer;
+	float ClearAttackStartedTime = 0.7f;
+	FTimerDynamicDelegate ClearAttackStartedDelagate;
+
+	FTimerHandle CallAttackTimer;
+	float CallAttackTime = 0.01f;
+	FTimerDynamicDelegate CallAttackDelagate;
 	UFUNCTION()
 	void StartAttackCoolDown();
 	UFUNCTION()
@@ -81,6 +89,15 @@ protected:
 	UFUNCTION()
 	void RandomlyAssignStrafeDirection();
 	float StrafeTime = 0.01f;
+
+	UFUNCTION(BlueprintCallable)
+	void SyncStateWithBehaviorTree();
+	FTimerHandle SyncStateTimer;
+	float SyncStateTime = 1.0f;
+	UFUNCTION()
+	ECombatState GetCombatState() { return CharacterStateComponent->GetCharacterCombatState(); };
+
+
 	UFUNCTION()
 	void Strafe();
 private:
@@ -102,9 +119,8 @@ public:
 	virtual void InterfaceAttack() override;
 	virtual bool IsNpc_Implementation() override { return true; };
 	virtual void ToggleSelectedEquipmentEquipped_Implementation(bool State) {};
-	virtual void InterfaceSetCombatState_Implementation(uint8 state) {};
 	virtual void StartStrafing();
 	virtual void StopStrafing();
 	virtual bool RecieveAttack(FFinishedAttackStruct AttackData) override;
-	virtual void InterfaceClearAttacking_Implementation() {};
+	virtual void InterfaceClearAttacking_Implementation() override {};
 };

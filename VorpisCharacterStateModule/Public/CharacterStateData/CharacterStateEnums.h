@@ -21,18 +21,21 @@ enum class EGeneralState : uint8
 UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
-	ECS_None UMETA(DisplayName = "None"),
-	ECS_Attacking UMETA(DisplayName = "Attacking"),
-	ECS_PreparingAttack UMETA(DisplayName = "PreparingAttack"),
-	ECS_ShieldBlocking UMETA(DisplayName = "ShieldBlocking"),
-	ECS_Dodging UMETA(DisplayName = "Dodging"),
-	ECS_Aiming UMETA(DisplayName = "Aiming"),
-	ECS_Reloading UMETA(DisplayName = "Reloading"),
-	ECS_Throwing UMETA(DisplayName = "Throwing"),
-	ECS_Kicking UMETA(DisplayName = "Kicking"),
-	ECS_Parrying UMETA(DisplayName = "Parrying"),
-	ECS_HitStunned UMETA(DisplayName = "HitStunned"),
-	ECS_BlockStunned UMETA(DisplayName = "BlockStunned"),
+	ECS_None UMETA(DisplayName = "None"),									// 0
+	ECS_StartAttacking UMETA(DisplayName = "StartAttacking"),		// 1
+	ECS_Attacking UMETA(DisplayName = "Attacking"),						// 2
+	ECS_ShieldBlocking UMETA(DisplayName = "ShieldBlocking"),		// 3
+	ECS_Dodging UMETA(DisplayName = "Dodging"),							// 4
+	ECS_Aiming UMETA(DisplayName = "Aiming"),								// 5
+	ECS_Reloading UMETA(DisplayName = "Reloading"),						// 6
+	ECS_Throwing UMETA(DisplayName = "Throwing"),						// 7
+	ECS_Kicking UMETA(DisplayName = "Kicking"),							// 8
+	ECS_Parrying UMETA(DisplayName = "Parrying"),						// 9
+	ECS_HitStunned UMETA(DisplayName = "HitStunned"),					// 10
+	ECS_BlockStunned UMETA(DisplayName = "BlockStunned"),				// 11
+	ECS_StartStrafing UMETA(DisplayName = "StartStrafing"),			// 12
+	ECS_Strafing UMETA(DisplayName = "Strafing"),						// 13
+	EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"),	// 14
 };
 
 UENUM(BlueprintType)
@@ -53,18 +56,4 @@ enum class EAiMainBehavior : uint8
 	AMB_Hiding UMETA(DisplayName = "Hiding"),					       // 2
 	AMB_Surrendering UMETA(DisplayName = "Surrendering"),			 // 3
 	AMB_Manipulating UMETA(DisplayName = "Manipulating"),			 // 4
-};
-
-UENUM(BlueprintType)
-enum class EAiCombatState : uint8
-{
-	EACS_None UMETA(DisplayName = "None"),							    // 0
-	EACS_StartAttacking UMETA(DisplayName = "StartAttacking"),   // 1
-	EACS_Attacking UMETA(DisplayName = "Attacking"),			    // 2	
-	EACS_StartStrafing UMETA(DisplayName = "StartStrafing"),		 // 3
-	EACS_Strafing UMETA(DisplayName = "Strafing"),				    // 4
-	EACS_Dodging UMETA(DisplayName = "Dodging"),					    // 5
-	EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"), // 6
-	EACS_HitStunned UMETA(DisplayName = "HitStunned"),				 // 7
-	EACS_BlockStunned UMETA(DisplayName = "BlockStunned"),		 // 8
 };

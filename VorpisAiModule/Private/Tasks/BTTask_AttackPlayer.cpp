@@ -4,6 +4,7 @@
 #include "Tasks/BTTask_AttackPlayer.h"
 #include "AIController.h"
 #include "Npc/NpcInterface.h"
+#include "BlackBoardNames/BlackBoardNames.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_AttackPlayer::UBTTask_AttackPlayer()
@@ -22,23 +23,30 @@ EBTNodeResult::Type UBTTask_AttackPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	}
 
 	AActor* ControlledPawnAsActor = AIController->GetPawn();
-	AActor* Target = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
+	Target = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 	if (Target == nullptr)
 	{
+		OwnerComp.GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);
 		return EBTNodeResult::Failed;
 	}
-	float Distance = FVector::Distance(AIController->GetPawn()->GetActorLocation(), Target->GetActorLocation());
-	float AngleToPlayer = FVector::DotProduct(AIController->GetPawn()->GetActorForwardVector(), (Target->GetActorLocation() - AIController->GetPawn()->GetActorLocation()).GetSafeNormal());
-	if (Distance > AttackRange)
-	{
-		return EBTNodeResult::InProgress;
-	}
-	AIController->StopMovement();
-	if (INpcInterface* NpcInterface = Cast<INpcInterface>(ControlledPawnAsActor))
-	{
-		NpcInterface->InterfaceAttack();
+	else if (IsValid(Target)) {
+		float Distance = FVector::Distance(AIController->GetPawn()->GetActorLocation(), Target->GetActorLocation());
+		//float AngleToPlayer = FVector::DotProduct(AIController->GetPawn()->GetActorForwardVector(), (Target->GetActorLocation() - AIController->GetPawn()->GetActorLocation()).GetSafeNormal());
+		if (Distance > AttackRange)
+		{
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, "should switch to none");
+			}
+			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);
+		}
+		if (INpcInterface* NpcInterface = Cast<INpcInterface>(ControlledPawnAsActor))
+		{
+			AIController->StopMovement();
+			NpcInterface->InterfaceAttack();
+		}
 		return EBTNodeResult::Succeeded;
 	}
-
-	return EBTNodeResult::InProgress;
+	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);
+	return EBTNodeResult::Failed;
+	
 }

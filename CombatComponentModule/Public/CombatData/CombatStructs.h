@@ -18,6 +18,8 @@ struct FInitialAttackData
 	EPhysicalDamageType PrimaryDamageType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int ComboCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EWeaponSwingType SwingType;
 };
 
 USTRUCT(BlueprintType)
@@ -43,10 +45,12 @@ USTRUCT(BlueprintType)
 struct FHitTraceResults
 {
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actions")
-	FName HitBone;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actions")
-	FVector HitLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttackTrace")
+	FName HitBone = "None";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttackTrace")
+	FVector HitLocation = FVector();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AttackTrace")
+	FVector AttackerLocation = FVector();
 };
 
 USTRUCT(BlueprintType)
@@ -58,4 +62,6 @@ public:
 	FHitTraceResults HitTraceResults;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FAttackStruct AttackData;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	EPhysicalDamageType PrimaryDamageType;
 };

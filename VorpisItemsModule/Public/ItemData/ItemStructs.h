@@ -32,6 +32,8 @@ public:
 	bool IsArmor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
 	TMap<EPhysicalDamageType, int> ProtectionMap; // adjusted protection from quality and condition
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	int Coverage;
 	
 	// other data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Other")

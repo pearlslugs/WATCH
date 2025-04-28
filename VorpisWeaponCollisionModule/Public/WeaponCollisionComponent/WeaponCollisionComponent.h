@@ -32,6 +32,10 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Mesh")
 	USkeletalMeshComponent* ItemSkeletalMesh;
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE USkeletalMeshComponent* GetItemSkeletalMesh() { return ItemSkeletalMesh; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetItemSkeletalMesh(USkeletalMeshComponent* NewSkeletalMesh) { ItemSkeletalMesh = NewSkeletalMesh; }
 
 	UPROPERTY()
 	TArray<AActor*> IgnoredActors;

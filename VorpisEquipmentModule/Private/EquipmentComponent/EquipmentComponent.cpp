@@ -48,6 +48,14 @@ void UEquipmentComponent::SetDefaultQuickslots()
 	}
 }
 
+FItemData UEquipmentComponent::GetEquippedSlot(EEquipmentSlot Slot)
+{
+	if (EquippedItems.Contains(Slot)) {
+		return EquippedItems[Slot];
+	};
+	return FItemData();
+}
+
 void UEquipmentComponent::InitializeQuickslots()
 {
 	 // so what we need to do here is itereate through the quickslots and call the delagate so taht it spawn on the player

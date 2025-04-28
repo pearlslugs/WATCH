@@ -26,7 +26,7 @@ bool UBTDecorator_ShouldStrafe::CalculateRawConditionValue(UBehaviorTreeComponen
 		return false;
 	}
 	uint8 CombatState = AIController->GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiCombatState);
-	if (CombatState == 3)
+	if (CombatState == 12)
 	{
 		return true;
 	}

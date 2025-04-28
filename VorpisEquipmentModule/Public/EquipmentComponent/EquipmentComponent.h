@@ -109,13 +109,17 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	// DEPRICATED, REPLACE WITH EQUIPMENT SLOT
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	FItemData EquippedRightHandItem;
+	// DEPRICATED, REPLACE WITH EQUIPMENT SLOT
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	FItemData EquippedLeftHandItem;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<EEquipmentSlot, FItemData> EquippedItems;
+	UFUNCTION(BlueprintCallable)
+	FItemData GetEquippedSlot(EEquipmentSlot Slot);
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<int, FItemData> Quickslots;

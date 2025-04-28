@@ -25,7 +25,8 @@ public class VorpisBaseCharacterModule : ModuleRules
          "VorpisEquipmentModule",
          "VorpisInteractableModule",
          "MontageManagerModule",
-         "Niagara"
+         "Niagara",
+         "VorpisStatsModule"
       });
 
         PrivateDependencyModuleNames.AddRange(new[]

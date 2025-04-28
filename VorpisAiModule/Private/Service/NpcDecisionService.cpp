@@ -30,6 +30,27 @@
 //EACS_BlockStunned UMETA(DisplayName = "BlockStunned"),		    // 8
 //};
 
+//UENUM(BlueprintType)
+//enum class ECombatState : uint8
+//{
+//	ECS_None UMETA(DisplayName = "None"),									// 0
+//	ECS_StartAttacking UMETA(DisplayName = "StartAttacking"),		// 1
+//	ECS_Attacking UMETA(DisplayName = "Attacking"),						// 2
+//	ECS_ShieldBlocking UMETA(DisplayName = "ShieldBlocking"),		// 3
+//	ECS_Dodging UMETA(DisplayName = "Dodging"),							// 4
+//	ECS_Aiming UMETA(DisplayName = "Aiming"),								// 5
+//	ECS_Reloading UMETA(DisplayName = "Reloading"),						// 6
+//	ECS_Throwing UMETA(DisplayName = "Throwing"),						// 7
+//	ECS_Kicking UMETA(DisplayName = "Kicking"),							// 8
+//	ECS_Parrying UMETA(DisplayName = "Parrying"),						// 9
+//	ECS_HitStunned UMETA(DisplayName = "HitStunned"),					// 10
+//	ECS_BlockStunned UMETA(DisplayName = "BlockStunned"),				// 11
+//	ECS_StartStrafing UMETA(DisplayName = "StartStrafing"),			// 12
+//	ECS_Strafing UMETA(DisplayName = "Strafing"),						// 13
+//	EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"),	// 14
+//};
+
+
 UNpcDecisionService::UNpcDecisionService(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -44,6 +65,7 @@ UNpcDecisionService::UNpcDecisionService(const FObjectInitializer& ObjectInitial
 
 void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+	// it keeps getting stuck, it was on follow player, but just standing there
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 	if (NpcController == nullptr || GetBlackboardComponent() == nullptr || !IsValid(ControlledPawn))
 	{
@@ -58,7 +80,10 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	// if stuck strafing or attacking
 	// all of the below logic should only be if they are fighting
 	// make combat logic funciton to call
-	if (CombatState == 2 || CombatState == 4 ) {
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::FromInt((int)CombatState));
+	}
+	if (CombatState == 2 || CombatState == 13 || CombatState == 5) {
 		if (!TimerCalled)
 		{
 			TimerCalled = true;
@@ -66,34 +91,33 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		}
 	}
 	// dont reset if starting strafe or starting attack
-	if (CombatState == 1 || CombatState == 3 || CombatState == 5
-		|| CombatState == 7 || CombatState == 8)
+	if (CombatState == 1 || CombatState == 12 || CombatState == 4
+		|| CombatState == 10 || CombatState == 11)
 	{
 		// dont return, it messes up
 	}
 	else {
 		// print combat state
 		AActor* Target = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject(BBKeys::Target));
-		if (IsValid(Target))
-		{
+		if (IsValid(Target)) {
 			float Distance = FVector::Dist(ControlledPawn->GetActorLocation(), Target->GetActorLocation());
-			if (Distance > AttackDistance)
-			{
-				GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 6);
+			if (Distance > AttackDistance) {
+				GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 14);
 			}
-			else
-			{
+			else {
 				float Random = FMath::FRandRange(0.0f, 1.0f);
+				bool OnStrafeCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnStrafeCoolDown);
 				bool OnCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnAtackCoolDown);
-				if (Random <= 0.65f || OnCoolDown)
-				{
-					// strafe
+				if (OnStrafeCoolDown) {
+					// if we are  on strafe cool down
+					GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
+					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
+				} else if (Random < 0.70f && !OnCoolDown) {
 					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
 				}
-				else
-				{
-					// attack
-					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 3);
+				else {
+					GetBlackboardComponent()->SetValueAsBool(BBKeys::OnStrafeCoolDown, true);
+					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 12);
 				}
 			}
 		}
@@ -116,7 +140,7 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 void UNpcDecisionService::FreeUpCharacter()
 {
 	uint8 CombatState = GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiCombatState);
-	if (CombatState == 2 || CombatState == 4)
+	if (CombatState == 2 || CombatState == 13 || CombatState == 5)
 	{
 
 		GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);

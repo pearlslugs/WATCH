@@ -177,13 +177,16 @@ void AVorpisBasePlayerCharacter::PrimaryAttack()
 		// get sphere sweep and send like that
 	}
 	ECombatPosition Position = CombatComponent->GetCombatPosition();
-		if (Position == ECombatPosition::ECP_High) {
+		if (Position == ECombatPosition::ECP_High || Position == ECombatPosition::ECP_Low) {
 			Combo = CombatComponent->GetComboCount();
+		}
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Combo));
 		}
 	UAnimMontage* Montage = MontageManagerComponent->GetAttackMontage(Position, false, Combo);
 	if (IsValid(Montage)) {
-		CombatComponent->IncrimentComboCount();
 		PlayAnimMontage(Montage);
+		CombatComponent->IncrimentComboCount();
 	}
 }
 

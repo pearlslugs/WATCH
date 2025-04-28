@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_Strafe::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	{
 		OwnerComp.GetAIOwner()->StopMovement();
 		NpcInterface->StartStrafing();
-		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 4);
+		OwnerComp.GetAIOwner()->GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 13);
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

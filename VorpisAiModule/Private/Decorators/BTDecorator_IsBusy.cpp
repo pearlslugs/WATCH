@@ -20,6 +20,8 @@
 //EACS_BlockStunned UMETA(DisplayName = "BlockStunned"),		    // 8
 //};
 
+
+
 UBTDecorator_IsBusy::UBTDecorator_IsBusy()
 {
 	NodeName = "Is Busy";
@@ -32,7 +34,7 @@ bool UBTDecorator_IsBusy::CalculateRawConditionValue(UBehaviorTreeComponent& Own
 	if (BlackboardComponent)
 	{
 		uint8 CombatState = BlackboardComponent->GetValueAsEnum(BBKeys::AiCombatState);
-		if (CombatState == 4 || CombatState == 2 || CombatState == 5) {
+		if (CombatState == 13 || CombatState == 2 || CombatState == 4 || CombatState == 7 || CombatState == 8) {
 			return true;
 		}
 

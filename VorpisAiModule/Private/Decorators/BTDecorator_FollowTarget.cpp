@@ -7,14 +7,25 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 
-///////////////////////////////////////////////////////////////////
-//  EACS_None UMETA(DisplayName = "None"),							  // 0
-//  EACS_StartAttacking UMETA(DisplayName = "StartAttacking"),   // 1
-//  EACS_Attacking UMETA(DisplayName = "Attacking"),			     // 2	
-//  EACS_Strafing UMETA(DisplayName = "Strafing"),				     // 3
-//  EACS_Dodging UMETA(DisplayName = "Dodging"),					  // 4
-//  EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"), // 5 <==== if its 5 then follow target
-///////////////////////////////////////////////////////////////////
+//UENUM(BlueprintType)
+//enum class ECombatState : uint8
+//{
+//	ECS_None UMETA(DisplayName = "None"),									// 0
+//	ECS_StartAttacking UMETA(DisplayName = "StartAttacking"),		// 1
+//	ECS_Attacking UMETA(DisplayName = "Attacking"),						// 2
+//	ECS_ShieldBlocking UMETA(DisplayName = "ShieldBlocking"),		// 3
+//	ECS_Dodging UMETA(DisplayName = "Dodging"),							// 4
+//	ECS_Aiming UMETA(DisplayName = "Aiming"),								// 5
+//	ECS_Reloading UMETA(DisplayName = "Reloading"),						// 6
+//	ECS_Throwing UMETA(DisplayName = "Throwing"),						// 7
+//	ECS_Kicking UMETA(DisplayName = "Kicking"),							// 8
+//	ECS_Parrying UMETA(DisplayName = "Parrying"),						// 9
+//	ECS_HitStunned UMETA(DisplayName = "HitStunned"),					// 10
+//	ECS_BlockStunned UMETA(DisplayName = "BlockStunned"),				// 11
+//	ECS_StartStrafing UMETA(DisplayName = "StartStrafing"),			// 12
+//	ECS_Strafing UMETA(DisplayName = "Strafing"),						// 13
+//	EACS_FollowingTarget UMETA(DisplayName = "FollowingTarget"),	// 14
+//};
 
 UBTDecorator_FollowTarget::UBTDecorator_FollowTarget()
 {
@@ -28,7 +39,7 @@ bool UBTDecorator_FollowTarget::CalculateRawConditionValue(UBehaviorTreeComponen
 	if (AIController)
 	{
 		uint8 CombatState = AIController->GetBlackboardComponent()->GetValueAsEnum(BBKeys::AiCombatState);
-		if (CombatState == 6)
+		if (CombatState == 14)
 		{
 			return true;
 		}

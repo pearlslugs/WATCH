@@ -20,3 +20,11 @@ enum class EDodgeDirection : uint8
 	ESMD_Left UMETA(DisplayName = "Left"),
 	ESMD_Right UMETA(DisplayName = "Right"),
 };
+
+UENUM(BlueprintType)
+enum class EWeaponSwingType : uint8
+{
+	EWST_Slash UMETA(DisplayName = "Swing"),
+	EWST_Thrust UMETA(DisplayName = "Thrust"),
+	EWST_Bash UMETA(DisplayName = "Bash"),
+};

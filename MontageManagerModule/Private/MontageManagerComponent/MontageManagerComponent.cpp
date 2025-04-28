@@ -55,10 +55,15 @@ UAnimMontage* UMontageManagerComponent::GetAttackMontage(ECombatPosition CombatP
 	}
 }
 
-UAnimMontage* UMontageManagerComponent::GetHitReactionMontage(ECombatPosition CombatPosition)
+UAnimMontage* UMontageManagerComponent::GetHitReactionMontage(ECombatPosition CombatPosition, bool HitFromTheBack, int SpecificReaction)
 {
-	int RandomIndex = FMath::RandRange(0, HitReactionMontages.Montages[CombatPosition].Montages.Num() - 1);
-	UAnimMontage* Montage = HitReactionMontages.Montages[CombatPosition].Montages[RandomIndex];
+	if (HitFromTheBack) {
+		return HitFromTheBackMontage;
+	}
+
+	int ChosenIndex = SpecificReaction == 0 ?
+		FMath::RandRange(0, HitReactionMontages.Montages[CombatPosition].Montages.Num() - 1) : SpecificReaction;
+	UAnimMontage* Montage = HitReactionMontages.Montages[CombatPosition].Montages[ChosenIndex];
 	if (Montage) {
 		return Montage;
 	}

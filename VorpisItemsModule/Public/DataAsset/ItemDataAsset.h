@@ -20,6 +20,7 @@ class VORPISITEMSMODULE_API UItemDataAsset : public UDataAsset
 	GENERATED_BODY()
 public:
 	// basic data
+	UItemDataAsset();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Basics")
 	FName ItemName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Basics")
@@ -66,6 +67,11 @@ public:
 	TMap<EPhysicalDamageType, int> DamageMap;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
 	FGuid StatsScalingGuid; // we dont want all the modules to rely on each other
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	//	EWST_Slash UMETA(DisplayName = "Swing"),		0
+	//	EWST_Thrust UMETA(DisplayName = "Thrust"),	1
+	//	EWST_Bash UMETA(DisplayName = "Bash"),			2
+	TMap<uint8, EPhysicalDamageType>  SwingDamageTypeMap;
 
 	// food data
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Food")
@@ -95,9 +101,9 @@ public:
 
 	// armor data
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Armor")
-	TMap<EPhysicalDamageType, int> ArmorMap;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Armor")
 	EArmorClass ArmorClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Armor")
+	int Coverage;
 
 
 	FName GetEquipSocketName() {

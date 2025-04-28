@@ -76,7 +76,7 @@ void UWeaponCollisionComponent::TraceForHits()
 			UEngineTypes::ConvertToTraceType(ECC_Pawn),
 			false, 
 			ActorsToIgnore,
-			EDrawDebugTrace::ForOneFrame,
+			EDrawDebugTrace::None,
 			OutHits,
 			true
 		);
@@ -95,6 +95,7 @@ void UWeaponCollisionComponent::TraceForHits()
 					{
 						FHitTraceResults CurrentHitTraceResults;
 						CurrentHitTraceResults.HitLocation = Hit.ImpactPoint;
+						CurrentHitTraceResults.AttackerLocation = GetOwner()->GetActorLocation();
 						CurrentHitTraceResults.HitBone = InterfaceActor->GetSkinnedMesh()->FindClosestBone(Hit.ImpactPoint);
 						OnWeaponHitActor.Broadcast(HitActor, CurrentHitTraceResults);
 					}

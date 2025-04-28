@@ -69,7 +69,7 @@ ECombatPosition UBaseCmbatComponent::GetCombatPositionFromVector2D(FVector2D Dir
 	if (Direction.X > 0.5 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y)) return ECombatPosition::ECP_Right;
 	if (Direction.X < -0.3 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y) - 0.1) return ECombatPosition::ECP_Left;
 	if (Direction.Y > 0.5) return ECombatPosition::ECP_High;
-	///if (Direction.Y < -0.3) return ECombatPosition::ECP_Low; we need to add low back, just do the back and forth attack
+	if (Direction.Y < -0.3) return ECombatPosition::ECP_Low;
 	return ECombatPosition::ECP_None;
 }
 

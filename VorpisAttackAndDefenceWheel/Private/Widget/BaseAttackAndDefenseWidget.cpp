@@ -13,12 +13,16 @@ void UBaseAttackAndDefenseWidget::NativeTick(const FGeometry& MyGeometry, float 
 	Super::NativeTick(MyGeometry, DeltaTime);
 	if (GetIsTargetDifferent())
 	{
-		CurrentDefenseAngleFloat = FMath::Lerp(CurrentDefenseAngleFloat, TargetDefenseAngleFloat, DeltaTime * 5);
-		CurrentOffenceAngleFloat = FMath::Lerp(CurrentOffenceAngleFloat, TargetOffenceAngleFloat, DeltaTime * 5);
-		if (FMath::IsNearlyEqual(CurrentDefenseAngleFloat, TargetDefenseAngleFloat, 1) && FMath::IsNearlyEqual(CurrentOffenceAngleFloat, TargetOffenceAngleFloat, 1))
-		{
+		CurrentDefenseAngleFloat = FMath::Lerp(CurrentDefenseAngleFloat, TargetDefenseAngleFloat, DeltaTime * 9);
+		CurrentOffenceAngleFloat = FMath::Lerp(CurrentOffenceAngleFloat, TargetOffenceAngleFloat, DeltaTime * 9);
+		if (FMath::IsNearlyEqual(CurrentDefenseAngleFloat, TargetDefenseAngleFloat, 1)) {
 			CurrentDefenseAngleFloat = TargetDefenseAngleFloat;
+		}
+		if (FMath::IsNearlyEqual(CurrentOffenceAngleFloat, TargetOffenceAngleFloat, 1)) {
 			CurrentOffenceAngleFloat = TargetOffenceAngleFloat;
+			OnOuterTargetReached.Broadcast();
+		}
+		if (FMath::IsNearlyEqual(CurrentDefenseAngleFloat, TargetDefenseAngleFloat, 1) && FMath::IsNearlyEqual(CurrentOffenceAngleFloat, TargetOffenceAngleFloat, 1)) {
 			SetIsTargetDifferent(false);
 		}
 	}
@@ -38,6 +42,9 @@ void UBaseAttackAndDefenseWidget::SetDefensePosition(ECombatPosition NewDefenseP
 	case ECombatPosition::ECP_High:
 		SetTargetDefenseAngleFloat(HighTargetAngleFloat);
 		break;
+	case ECombatPosition::ECP_Low:
+		SetTargetDefenseAngleFloat(LowTargetAngleFloat);
+		break;
 	default:
 		break;
 	}
@@ -46,9 +53,7 @@ void UBaseAttackAndDefenseWidget::SetDefensePosition(ECombatPosition NewDefenseP
 }
 void UBaseAttackAndDefenseWidget::SetOffencePosition(ECombatPosition NewOffencePosition)
 {
-	if (!GEngine) return;
-	FString Postion = *UEnum::GetValueAsName(NewOffencePosition).ToString();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, Postion);
+	OnOuterTargetActive.Broadcast();
 	switch (NewOffencePosition)
 	{
 	case ECombatPosition::ECP_Left:
@@ -59,6 +64,9 @@ void UBaseAttackAndDefenseWidget::SetOffencePosition(ECombatPosition NewOffenceP
 		break;
 	case ECombatPosition::ECP_High:
 		SetTargetOffenceAngleFloat(OuterHighTargetAngleFloat);
+		break;
+	case ECombatPosition::ECP_Low:
+		SetTargetOffenceAngleFloat(OuterLowTargetAngleFloat);
 		break;
 	default:
 		break;

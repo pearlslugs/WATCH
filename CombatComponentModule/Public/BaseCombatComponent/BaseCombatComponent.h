@@ -44,7 +44,7 @@ public:
 	FTimerHandle ComboTimer;
 	float ComboResetTime = 2.2f;
 	FTimerDynamicDelegate CallResetCombo;
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ResetCombo();
 	UFUNCTION()
 	void StartComboTimer();

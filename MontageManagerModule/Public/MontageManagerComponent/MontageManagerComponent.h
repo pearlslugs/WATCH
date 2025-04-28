@@ -25,7 +25,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	UAnimMontage* GetAttackMontage(ECombatPosition CombatPosition, bool UseAlternative = false, int Combo = 0);
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
-	UAnimMontage* GetHitReactionMontage(ECombatPosition CombatPosition);
+	UAnimMontage* GetHitReactionMontage(ECombatPosition CombatPosition, bool HitFromTheBack = false, int SpecificReaction = 0);
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	UAnimMontage* GetBlockReactionMontage(ECombatPosition CombatPosition, bool UseAlternative);
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
@@ -34,7 +34,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	void SetCurrentCombatMontages(FDirectionalMontages Montages) { CurrentCombatMontages = Montages; }
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
-	void SetHitReactionMontages(FDirectionalMontages Montages) { HitReactionMontages = Montages; }
+	void SetHitReactionMontages(FDirectionalMontages Montages, UAnimMontage* NewHitFromTheBackMontage) { HitReactionMontages = Montages; HitFromTheBackMontage = NewHitFromTheBackMontage; }
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
 	void SetBlockReactionMontages(FDirectionalMontages Montages) { BlockReactionMontages = Montages; }
 	UFUNCTION(BlueprintCallable, Category = "Montage Manager")
@@ -54,6 +54,8 @@ protected:
 	FDirectionalMontages CurrentCombatMontages;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")
 	FDirectionalMontages HitReactionMontages;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")
+	UAnimMontage* HitFromTheBackMontage;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")
 	FDirectionalMontages BlockReactionMontages;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Current Montages")

@@ -159,6 +159,7 @@ void AVorpisBaseALSCharacter::Input_OnJump(const FInputActionValue& ActionValue)
 	{
 		if (StopRagdolling())
 		{
+			StopAnimMontage();
 			return;
 		}
 

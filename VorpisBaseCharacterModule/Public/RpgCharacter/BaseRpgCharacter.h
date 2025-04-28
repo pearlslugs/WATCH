@@ -9,9 +9,9 @@
 #include "WeaponCollisionComponent/WeaponCollisionComponent.h"
 #include "CharacterStateComponent/CharacterStateComponent.h"
 #include "MontageManagerComponent/MontageManagerComponent.h"
-#include "WeaponCollisionComponent/WeaponCollisionComponent.h"
 #include "GeneralData/GeneralData.h"
 #include "DataAsset/ItemDataAsset.h"
+#include "Components/CharacterStatusComponent.h"
 #include "VorpisALSCharacter/VorpisBaseALSCharacter.h"
 #include "BaseInterface/BaseRpgCharacterInterface.h"
 #include "BaseRpgCharacter.generated.h"
@@ -23,16 +23,21 @@
 class UNiagaraComponent;
 class UNiagaraSystem;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterDisabled);
+
 
 UCLASS()
 class VORPISBASECHARACTERMODULE_API ABaseRpgCharacter : public AVorpisBaseALSCharacter, public IBaseRpgCharacterInterface
 {
 	GENERATED_BODY()
-
-
 public:
 
 	ABaseRpgCharacter();
+	UPROPERTY(BlueprintAssignable)
+	FOnDeath OnDeath;
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterDisabled OnCharacterDisabled;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	FInitialAttackData CurrentInitialAttackData;
@@ -47,11 +52,14 @@ public:
 	// dodge
 	UFUNCTION()
 	void BaseDodge();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void DodgeInDirection(EDodgeDirection DodgeDirection);
 
+	// equipment
 	UFUNCTION()
 	void CreateOrDestroyEquipmentMeshes(FItemData Newtem, bool CreateOrDestroy);
+	UFUNCTION()
+	void InitializeEquippedItems() {};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TObjectPtr<UNiagaraComponent> BloodNiagara;
@@ -62,7 +70,12 @@ public:
 	UFUNCTION()
 	void SpawnBloodAtLocation(FVector Location);
 
+	UFUNCTION(BlueprintCallable)
+	void Die();
+	UFUNCTION(BlueprintCallable)
+	void BecomeDisabled();
 protected:
+
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* Input) override;
 	struct FEnhancedInputActionValueBinding* MoveActionBinding;
@@ -76,15 +89,24 @@ protected:
 	UBaseCmbatComponent* CombatComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UEquipmentComponent* EquipmentComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCharacterStatusComponent* CharacterStatusComponent;
 
 	// equipment
 
 	UFUNCTION(BlueprintCallable)
 	void EquipItem(FItemData Item);
 	UFUNCTION(BlueprintCallable)
+	// TODO picking up stuff off the ground
+	void EquipPickUp(FItemData Item, UStaticMesh* ItemStaticMesh, USkeletalMesh* ItemSkeletalMesh) {};
+	UFUNCTION(BlueprintCallable)
 	void UnequipItem(FItemData Item);
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<FGuid, UStaticMeshComponent*> EquipmentMeshes;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<FGuid, USkeletalMeshComponent*> EquipmentSKMeshes;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<EBodyPart, FCoalatedProtectionMap> BodyPartProtectionMap;
 
 	// weapon collision
 	UFUNCTION()

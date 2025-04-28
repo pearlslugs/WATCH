@@ -10,11 +10,20 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOuterTargetReached);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOuterTargetActive);
+
 UCLASS()
 class VORPISATTACKANDDEFENCEWHEEL_API UBaseAttackAndDefenseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+
+	UPROPERTY(BlueprintAssignable)
+	FOnOuterTargetReached OnOuterTargetReached;
+	UPROPERTY(BlueprintAssignable)
+	FOnOuterTargetActive OnOuterTargetActive;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float DeltaTime) override;
 	virtual void NativeConstruct() override;
@@ -49,6 +58,8 @@ public:
 	float LeftTargetAngleFloat = 0;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float HighTargetAngleFloat = 0;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float LowTargetAngleFloat = 0;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float OuterRightTargetAngleFloat = 0;
@@ -56,6 +67,8 @@ public:
 	float OuterLeftTargetAngleFloat = 0;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float OuterHighTargetAngleFloat = 0;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float OuterLowTargetAngleFloat = 0;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	bool IsTargetDifferent = false;
