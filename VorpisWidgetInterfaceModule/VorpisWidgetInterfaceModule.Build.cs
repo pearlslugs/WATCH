@@ -27,6 +27,7 @@ public class VorpisWidgetInterfaceModule : ModuleRules
 			{
 				"Core",
 				"UMG",
+                "VorpisItemsModule",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -40,6 +41,7 @@ public class VorpisWidgetInterfaceModule : ModuleRules
 				"Slate",
 				"UMG",
 				"SlateCore",
+                "VorpisItemsModule",
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

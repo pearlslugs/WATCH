@@ -26,6 +26,11 @@ bool UBTDecorator_ShouldAttack::CalculateRawConditionValue(UBehaviorTreeComponen
 		return false;
 	}
 	uint8 CombatState = BlackboardComponent->GetValueAsEnum(BBKeys::AiCombatState);
+	bool OnAttackCoolDown = BlackboardComponent->GetValueAsBool(BBKeys::OnAtackCoolDown);
+	if (OnAttackCoolDown) {
+		BlackboardComponent->SetValueAsEnum(BBKeys::AiCombatState, 12);
+		return false;
+	}
 
 	if (CombatState == 1)
 	{

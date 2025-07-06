@@ -65,51 +65,86 @@ void UInteractorComponent::CheckForInteractables()
 				if (Distance < CurrentDistanceFromOwner) {
 					CurrentInteractable = Actor;
 					CurrentDistanceFromOwner = Distance;
+					ShowIntneractPrompt.Broadcast(true);
 				}
 			}
 		}
 	} 
 	else {
 		CurrentInteractable = nullptr;
+		PreviousInteractable = nullptr;
+		ShowIntneractPrompt.Broadcast(true);
 		SetComponentTickEnabled(false);
 	}
 }
 
 void UInteractorComponent::CheckForInteractablesFirstPerson()
 {
-	if (CheckForInteractable && IsValid(OwnerCamera)) {
+	if (CheckForInteractable && IsValid(AlsCamera)) {
 		TArray<FHitResult> OutHits;
 		TArray<AActor*> ActorsToIgnore;
 		ActorsToIgnore.Add(GetOwner());
-		FVector StartLocation = OwnerCamera->GetComponentLocation();
-		FVector EndLocation = StartLocation + (OwnerCamera->GetForwardVector() * 400);
-		float CapsuleRadius = 10.0f;
-		float CapsuleHalfHeight = 10.0f;
+		FVector StartLocation = AlsCamera->GetFirstPersonCameraLocation();
+		FVector Rotation = AlsCamera->GetCameraRotation().Vector();
+		FVector EndLocation = StartLocation + (Rotation * 200);
 
-		bool bHit = UKismetSystemLibrary::CapsuleTraceMulti(
+		bool bHit = UKismetSystemLibrary::LineTraceMulti(
 			this,
 			StartLocation,
 			EndLocation,
-			CapsuleRadius,
-			CapsuleHalfHeight,
-			UEngineTypes::ConvertToTraceType(ECC_Pawn),
+			UEngineTypes::ConvertToTraceType(ECC_Camera),
 			false,
 			ActorsToIgnore,
-			EDrawDebugTrace::Persistent,
+			EDrawDebugTrace::ForOneFrame,
 			OutHits,
 			true
 		);
+		bool FoundInteractable = false;;
 		if (bHit) {
-			for (FHitResult Hit : OutHits) {
+			for (FHitResult &Hit : OutHits) {
 				if (Hit.GetActor()->Implements<UInteractableInterface>()) {
-					CurrentInteractable = Hit.GetActor();
+					AssessInteractable(Hit.GetActor());
+					FoundInteractable = true;
 					break;
+				}
+			}
+			if (!FoundInteractable) {
+				if (CurrentInteractable) {
+					IInteractableInterface* NewInteractable = Cast<IInteractableInterface>(CurrentInteractable);
+					if (NewInteractable) {
+						ShowIntneractPrompt.Broadcast(false);
+						NewInteractable->ToggleHovered(false);
+						CurrentInteractable = nullptr;
+					}
 				}
 			}
 		}
 		else {
+			if (CurrentInteractable) {
+				IInteractableInterface* NewInteractable = Cast<IInteractableInterface>(CurrentInteractable);
+				if (NewInteractable) {
+					NewInteractable->ToggleHovered(false);
+				}
+			}
+			ShowIntneractPrompt.Broadcast(false);
 			CurrentInteractable = nullptr;
 		}
+	}
+}
+
+void UInteractorComponent::AssessInteractable(AActor* ActorReference)
+{
+	if (CurrentInteractable == ActorReference) return;
+	PreviousInteractable = CurrentInteractable;
+	CurrentInteractable = ActorReference;
+	IInteractableInterface* PreviousInteractableInterface = Cast<IInteractableInterface>(PreviousInteractable);
+	IInteractableInterface* NewInteractable = Cast<IInteractableInterface>(CurrentInteractable);
+	if (PreviousInteractableInterface) {
+		PreviousInteractableInterface->ToggleHovered(false);
+	}
+	if (NewInteractable) {
+		ShowIntneractPrompt.Broadcast(true);
+		NewInteractable->ToggleHovered(true);
 	}
 }
 

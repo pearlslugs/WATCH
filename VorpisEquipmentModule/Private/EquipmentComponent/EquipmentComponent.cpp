@@ -37,6 +37,7 @@ void UEquipmentComponent::RecieveQuickslots(TMap<int, FItemData> QuickslotsToRec
 
 void UEquipmentComponent::SetDefaultQuickslots()
 {
+	Quickslots.Empty();
 	if (!IsValid(BlankAsset)) {
 		UE_LOG(LogTemp, Error, TEXT("BlankAsset not set in EquipmentComponent!"));
 		return;
@@ -62,7 +63,7 @@ void UEquipmentComponent::InitializeQuickslots()
 	for (int i = 0; i < QuickslotsLength; i++) {
 		if (!IsValid(Quickslots[i].ItemAsset)) continue;
 		if (Quickslots[i].ItemAsset != BlankAsset) {
-			AffectEquipmentStaticMeshes.Broadcast(Quickslots[i], true);
+			AffectEquipmentStaticMeshes.Broadcast(Quickslots[i], true, false, false);
 		}
 	}
 }
@@ -96,7 +97,7 @@ FItemData UEquipmentComponent::GetEquippedItem(EEquipmentSlot Slot)
 bool UEquipmentComponent::GetIsSlotEmpty(EEquipmentSlot Slot)
 {
 	FItemData FoundItem = GetEquippedItem(Slot);
-	return !IsValid(FoundItem.ItemAsset);
+	return !IsValid(FoundItem.ItemAsset) || FoundItem.ItemAsset == BlankAsset;
 }
 
 FItemData UEquipmentComponent::UnequipItem(EEquipmentSlot Slot)
@@ -130,7 +131,7 @@ bool UEquipmentComponent::GetIsQuickslotEmpty(int Slot)
 {
 	FItemData FoundItem = GetQuickslot(Slot);
 
-	return IsValid(FoundItem.ItemAsset) || FoundItem.ItemAsset == BlankAsset;
+	return !IsValid(FoundItem.ItemAsset) || FoundItem.ItemAsset == BlankAsset;
 }
 
 int UEquipmentComponent::FindStackableItemInQuickslot(FItemData ItemData)
@@ -169,20 +170,54 @@ EStackableRejectionReason UEquipmentComponent::AddStackableItemToQuickslot(int I
 	return EStackableRejectionReason::ESRR_NotStackable;
 }
 
-void UEquipmentComponent::AddItemToQuickslots(FItemData ItemData, int Slot)
+void UEquipmentComponent::PickUpItem(FItemData ItemToPickUp, bool RightHand)
+{
+	if (IsItemBlank(ItemToPickUp) || !IsValid(ItemToPickUp.ItemAsset)) {
+		OnError.Broadcast("Bad Item");
+		return;
+	}
+	int CorrectSlot = HoveredQuickslot == SelectedQuickslot ? GetFirstEmptyQuickslot() :
+		IsItemBlank(Quickslots[HoveredQuickslot]) ? HoveredQuickslot :
+		GetFirstEmptyQuickslot();
+	if (CorrectSlot > QuickslotsLength || CorrectSlot == -1) {
+		OnError.Broadcast("Slots Full");
+	}
+	AffectEquipmentStaticMeshes.Broadcast(ItemToPickUp, true, true, RightHand);
+	if (ItemToPickUp.ItemAsset->CanGoInQuickslots) {
+		// false because we broadcast after we change the equipped item
+		AddItemToQuickslots(ItemToPickUp, CorrectSlot, false);
+	}
+	EquippedItems.Add(ItemToPickUp.ItemAsset->EquipmentSlot, ItemToPickUp);
+	switch (ItemToPickUp.ItemAsset->EquipmentSlot)
+	{
+	case EEquipmentSlot::EES_LeftHand:
+		SetLeftHandItem(ItemToPickUp, false);
+		break;
+	case EEquipmentSlot::EES_RightHand:
+		SetRightHandItem(ItemToPickUp, false);
+	}
+	OnInventoryChanged.Broadcast();
+}
+
+void UEquipmentComponent::AddItemToQuickslots(FItemData ItemData, int Slot, bool UpdateSave)
 {
 	if (!IsValid(ItemData.ItemAsset)) return;
 	if (ItemData.ItemAsset == BlankAsset) return;
-	if (ItemData.ItemAsset->IsStackable) {
+	if (ItemData.ItemAsset->IsStackable) 
+	{
 		int FoundSlot = FindStackableItemInQuickslot(ItemData);
 		if (FoundSlot != -1) {
 			EStackableRejectionReason RejectionReason = AddStackableItemToQuickslot(ItemData.Amount, Slot);
 			switch (RejectionReason) {
 			case EStackableRejectionReason::ESRR_None:
+				if (UpdateSave) {
+					OnInventoryChanged.Broadcast();
+				}
 				return;
 			case EStackableRejectionReason::ESRR_StackLimitReached:
 				ItemData.Amount = LeftOverItemAmount;
-				AddItemToQuickslots(ItemData, Slot);
+				AddItemToQuickslots(ItemData, Slot, UpdateSave);
+				OnItemAdded.Broadcast(ItemData, Slot);
 				return;
 			}
 		}	else {
@@ -190,13 +225,25 @@ void UEquipmentComponent::AddItemToQuickslots(FItemData ItemData, int Slot)
 		}
 	}
 	if (GetIsQuickslotEmpty(Slot)) {
+		OnItemAdded.Broadcast(ItemData, Slot);
 		Quickslots.Add(Slot, ItemData);
+		if (ItemData.ItemAsset->ToolProperties.Num() > 0) {
+			for (auto &Property : ItemData.ItemAsset->ToolProperties) {
+				AddToolProperties(Property.Key, Property.Value);
+			}
+		}
+		
 	}
 	else {
 		// error toast
 		UE_LOG(LogTemp, Warning, TEXT("Quickslot %d is not empty!"), Slot);
 	}
-
+	if (UpdateSave) {
+		OnInventoryChanged.Broadcast();
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, "Saved On Add Item");
+		}
+	}
 }
 
 int UEquipmentComponent::GetFirstEmptyQuickslot()
@@ -212,6 +259,20 @@ int UEquipmentComponent::GetFirstEmptyQuickslot()
 FItemData UEquipmentComponent::GetQuickslot(int Slot)
 {
 	return Quickslots[Slot];
+}
+void UEquipmentComponent::SetRightHandItem(FItemData NewItem, bool UpdateSave)
+{
+	EquippedRightHandItem = NewItem;
+	if (UpdateSave) {
+		OnInventoryChanged.Broadcast();
+	}
+}
+void UEquipmentComponent::SetLeftHandItem(FItemData NewItem, bool UpdateSave)
+{
+	EquippedLeftHandItem = NewItem; 
+	if (UpdateSave) {
+		OnInventoryChanged.Broadcast();
+	}
 }
 
 FItemData UEquipmentComponent::RemoveQuickslot(int Slot)
@@ -231,7 +292,7 @@ FItemData UEquipmentComponent::RemoveQuickslot(int Slot)
 FItemData UEquipmentComponent::SwapQuickslot(int slot, FItemData ItemToUse)
 {
 	if (GetIsQuickslotEmpty(slot)) {
-		UEquipmentComponent::AddItemToQuickslots(ItemToUse, slot);
+		UEquipmentComponent::AddItemToQuickslots(ItemToUse, slot, true);
 		return FItemData();
 	}
 	else {
@@ -241,7 +302,26 @@ FItemData UEquipmentComponent::SwapQuickslot(int slot, FItemData ItemToUse)
 	}
 }
 
+TArray<FItemData> UEquipmentComponent::GetQuickslotsArray()
+{
+	TArray<FItemData> EquipmentArray;
+	Quickslots.GenerateValueArray(EquipmentArray);
+	return EquipmentArray;
+}
 
+FItemData UEquipmentComponent::FindItemByGuid(FGuid ItemGuid)
+{
+	TArray<FItemData> EquipmentArray;
+	Quickslots.GenerateValueArray(EquipmentArray);
+	for (FItemData& Item : EquipmentArray)
+	{
+		if (Item.ItemGuid == ItemGuid)
+		{
+			return Item;
+		}
+	}
+	return FItemData();
+}
 
 
 
@@ -272,7 +352,7 @@ FItemData UEquipmentComponent::InterfaceSwapItem(EEquipmentSlot Slot, FItemData 
 
 void UEquipmentComponent::InterfaceAddItemToQuickslots(FItemData ItemData, int Slot)
 {
-	UEquipmentComponent::AddItemToQuickslots(ItemData, Slot);
+	UEquipmentComponent::AddItemToQuickslots(ItemData, Slot, true);
 }
 int UEquipmentComponent::InterfaceGetFirstEmptyQuickslot()
 {
@@ -311,5 +391,142 @@ void UEquipmentComponent::DecrementSelectedQuickslot()
 	}
 	else {
 		SelectedQuickslot = QuickslotsLength - 1;
+	}
+}
+
+void UEquipmentComponent::AddToolProperties(EToolProperties Property, int Value)
+{
+	if (CurrentToolProperties.Contains(Property)) {
+		if (Value > CurrentToolProperties[Property]) {
+			CurrentToolProperties.Add(Property, Value);
+		}
+	}
+	else {
+		CurrentToolProperties.Add(Property, Value);
+	}
+}
+
+FToolCompareType UEquipmentComponent::CompareToolCapabilities(TMap<EToolProperties, int> RequiredTools)
+{
+	bool Pass = true;
+	FToolCompareType Results = FToolCompareType();
+	TArray<FString> Errors;
+	bool UseRightHandEquippedItem = false;
+	bool UseLeftHandEquippedItem = false;
+	if (IsValid(EquippedRightHandItem.ItemAsset) && 
+		EquippedRightHandItem.ItemAsset != BlankAsset && 
+		!EquippedRightHandItem.ItemAsset->CanGoInQuickslots) {
+		// this means tht the right hand item isnt in quickslots but is held, so we use it
+		UseRightHandEquippedItem = true;
+	}
+	if (IsValid(EquippedLeftHandItem.ItemAsset) && 
+		EquippedLeftHandItem.ItemAsset != BlankAsset && 
+		!EquippedLeftHandItem.ItemAsset->CanGoInQuickslots) {
+		UseLeftHandEquippedItem = true;
+	}
+	if (UseLeftHandEquippedItem) {
+		if (IsValid(EquippedLeftHandItem.ItemAsset) && !IsItemBlank(EquippedLeftHandItem))
+		{
+			if (EquippedLeftHandItem.ItemAsset->ToolProperties.Num() > 0) {
+				for (auto& Property : EquippedLeftHandItem.ItemAsset->ToolProperties) {
+					AddToolProperties(Property.Key, Property.Value);
+				}
+			}
+		}
+	} 
+	if (UseRightHandEquippedItem) {
+		if (IsValid(EquippedRightHandItem.ItemAsset) && !IsItemBlank(EquippedRightHandItem))
+		{
+			if (EquippedRightHandItem.ItemAsset->ToolProperties.Num() > 0) {
+				for (auto& Property : EquippedLeftHandItem.ItemAsset->ToolProperties) {
+					AddToolProperties(Property.Key, Property.Value);
+				}
+			}
+		}
+		}
+	for (auto& ToolProperty : RequiredTools) {
+		if (CurrentToolProperties.Contains(ToolProperty.Key)) {
+			if (CurrentToolProperties[ToolProperty.Key] >= RequiredTools[ToolProperty.Key]) {
+
+			}
+			else {
+				Pass = false;
+				FString FullString = *UEnum::GetValueAsName(ToolProperty.Key).ToString();
+				int ChopIndex = FullString.Find("ETP_") + 4;
+				FString ToolString = FullString.RightChop(ChopIndex);
+				FString ErrorMessage = "Requires tool with " + ToolString + " quality of at least " + FString::FromInt(ToolProperty.Value);
+				Errors.Add(ErrorMessage);
+			}
+		}
+		else {
+			Pass = false;
+			FString FullString = *UEnum::GetValueAsName(ToolProperty.Key).ToString();
+			int ChopIndex = FullString.Find("ETP_") + 4;
+			FString ToolString = FullString.RightChop(ChopIndex);
+			FString ErrorMessage = "Requires tool with " + ToolString + " quality of at least " + FString::FromInt(ToolProperty.Value);
+			Errors.Add(ErrorMessage);
+		}
+	}
+	if (Pass) {
+		Results.Success = true;
+	}
+	else {
+		Results.Success = false;
+		Results.ErrorMessages = Errors;
+	}
+	return Results;
+}
+void UEquipmentComponent::UpdateLeftHandItemTaskMap(ETaskType Task, bool Condition)
+{
+	if (!IsItemBlank(EquippedLeftHandItem) && IsValid(EquippedLeftHandItem.ItemAsset)) 
+	{
+		EquippedLeftHandItem.CompletedTasksMap.Add(Task, Condition);
+		if (EquippedLeftHandItem.ItemAsset->CanGoInQuickslots) 
+		{
+			SyncLeftHandedItemData();
+		}
+	}
+}
+
+
+void UEquipmentComponent::SyncLeftHandedItemData()
+{
+	TArray<FItemData> Items;
+	Quickslots.GenerateValueArray(Items);
+	int CurrentQuickslotIndex = -1;
+	for (FItemData &Item : Items)
+	{
+		CurrentQuickslotIndex++;
+		if (Item.ItemGuid == EquippedLeftHandItem.ItemGuid)
+		{
+			Quickslots.Add(CurrentQuickslotIndex, EquippedLeftHandItem);
+			break;
+		}
+	}
+}
+void UEquipmentComponent::SyncRightHandedItemData()
+{
+	TArray<FItemData> Items;
+	Quickslots.GenerateValueArray(Items);
+	int CurrentQuickslotIndex = -1;
+	for (FItemData& Item : Items)
+	{
+		CurrentQuickslotIndex++;
+		if (Item.ItemGuid == EquippedRightHandItem.ItemGuid)
+		{
+			Quickslots.Add(CurrentQuickslotIndex, EquippedRightHandItem);
+			break;
+		}
+	}
+}
+
+// load equipment
+
+void UEquipmentComponent::RecieveSavedQuickslots(TMap<int, FItemData> NewQuickslots)
+{
+	//SetDefaultQuickslots();
+	for (auto Quickslot : NewQuickslots)
+	{
+		AddItemToQuickslots(Quickslot.Value, Quickslot.Key, false);
 	}
 }

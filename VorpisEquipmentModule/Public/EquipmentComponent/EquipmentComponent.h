@@ -10,6 +10,8 @@
 #include "ItemData/ItemStructs.h"
 #include "EquipmentComponent.generated.h"
 
+
+
 UENUM(BlueprintType)
 enum class EStackableRejectionReason : uint8
 {
@@ -19,9 +21,10 @@ enum class EStackableRejectionReason : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnError, FString, ErrorString);
-// called when items are added or removed from quickslots
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAffectEquipmentStaticMeshes, FItemData, NewItem, bool, CreateOrDestroy);
-
+// called when items are added or removed from, equip means equip or unequipped
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FAffectEquipmentStaticMeshes, FItemData, NewItem, bool, CreateOrDestroy, bool, EquipSocket, bool, RightHand);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemAdded, FItemData, ItemData, int, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class VORPISEQUIPMENTMODULE_API UEquipmentComponent : public UActorComponent, public IEquipmentComponentInterface
@@ -36,10 +39,18 @@ public:
 	FOnError OnError;
 	UPROPERTY(BlueprintAssignable)
 	FAffectEquipmentStaticMeshes AffectEquipmentStaticMeshes;
+	UPROPERTY(BlueprintAssignable)
+	FOnItemAdded OnItemAdded;
+	UPROPERTY(BlueprintAssignable)
+	FOnInventoryChanged OnInventoryChanged;
 
 	// init
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Equipment")
 	UItemDataAsset* BlankAsset;
+	UFUNCTION(BlueprintCallable)
+	bool IsItemBlank(FItemData ItemToTest) { return ItemToTest.ItemAsset == BlankAsset; }
+	UFUNCTION(BlueprintCallable)
+	void PickUpItem(FItemData ItemToPickUp, bool RightHand);
 
 	// equipped items
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
@@ -57,13 +68,15 @@ public:
 	// quickslots
 	UFUNCTION(BlueprintCallable)
 	void SetDefaultQuickslots();
+	UFUNCTION(BlueprintCallable)
+	void RecieveSavedQuickslots(TMap<int, FItemData> NewQuickslots);
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void InitializeQuickslots();
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	int QuickslotsLength = 6;
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void AddItemToQuickslots(FItemData ItemData, int Slot);
+	void AddItemToQuickslots(FItemData ItemData, int Slot, bool UpdateSave);
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	int GetFirstEmptyQuickslot();
 	UFUNCTION(BlueprintPure, Category = "Equipment")
@@ -80,6 +93,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment")
 	int SelectedQuickslot = 0;
+	UPROPERTY(BlueprintReadOnly)
+	int HoveredQuickslot = 0;
+	UFUNCTION(BlueprintCallable)
+	void SetHoveredQuickslot(int NewIndex) { HoveredQuickslot = NewIndex; }
+	UFUNCTION(BlueprintCallable)
+	void SetSelectedQuickslot(int NewIndex) { SelectedQuickslot = NewIndex; }
 	UFUNCTION(BlueprintCallable)
 	void IncrementSelectedQuickslot();
 	UFUNCTION(BlueprintCallable)
@@ -97,13 +116,35 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RecieveQuickslots(TMap<int, FItemData> QuickslotsToRecieve);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintPure)
 	FItemData GetRightHandItem() { return EquippedRightHandItem; }
-	UFUNCTION()
+	UFUNCTION(BlueprintPure)
 	FItemData GetLeftHandItem() { return EquippedLeftHandItem; }
+	UFUNCTION(BlueprintCallable)
+	void SetRightHandItem(FItemData NewItem, bool UpdateSave);
+	UFUNCTION(BlueprintCallable)
+	void SetLeftHandItem(FItemData NewItem, bool UpdateSave);
 
+	// when the player adds a tool to their equip slots, the tool  properties need to be added to this so taht they can do tasks
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<EToolProperties, int> CurrentToolProperties;
+	UFUNCTION()
+	void AddToolProperties(EToolProperties Property, int Value);
+	UFUNCTION(BlueprintCallable)
+	FToolCompareType CompareToolCapabilities(TMap<EToolProperties, int> RequiredTools);
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FItemData> GetQuickslotsArray();
+	UFUNCTION(BlueprintCallable)
+	FItemData FindItemByGuid(FGuid ItemGuid);
 
+	// item data
+	UFUNCTION(BlueprintCallable)
+	void UpdateLeftHandItemTaskMap(ETaskType Task, bool Condition);
+	UFUNCTION(BlueprintCallable)
+	void SyncLeftHandedItemData();
+	UFUNCTION(BlueprintCallable)
+	void SyncRightHandedItemData();
 
 protected:
 	// Called when the game starts
@@ -123,6 +164,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<int, FItemData> Quickslots;
+	
 
 public:	
 	// Called every frame

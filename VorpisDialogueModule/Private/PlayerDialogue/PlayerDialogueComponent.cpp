@@ -46,7 +46,7 @@ void UPlayerDialogueComponent::GoToNextDialogueOption(FGuid Guid)
 		if (DialogueOptions.Num() > 0 && DialogueOptions.Num() > CurrentDialogueOptionIndex)
 		{
 			// we wont eally need the dialogue text to be an aray, we can chop it up later. just use 0 for now
-			BaseWidget->SetContent(DialogueOptions[CurrentDialogueOptionIndex].DialogueText[0]);
+			IBaseWidgetInterface::Execute_SetContent(MountedWidget, DialogueOptions[CurrentDialogueOptionIndex].DialogueText[0]);
 			CurrentDialogueOptionIndex++;
 			return;
 		}
@@ -56,7 +56,7 @@ void UPlayerDialogueComponent::GoToNextDialogueOption(FGuid Guid)
 		TArray<FString> DialogueText = DialogueDataAsset->DialogueData.DialogueMap[Guid].DialogueText;
 		if (DialogueText.Num() > 0) 
 		{
-			BaseWidget->SetContent(DialogueText[0]);
+			IBaseWidgetInterface::Execute_SetContent(MountedWidget, DialogueText[0]);
 			return;
 		}
 	}
@@ -75,14 +75,16 @@ void UPlayerDialogueComponent::EndDialogue()
 	if (MountedWidget) 
 	{
 		IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget);
-		if (BaseWidget) { BaseWidget->CloseWidget(); }
+		if (BaseWidget) { 
+			IBaseWidgetInterface::Execute_CloseWidget(MountedWidget);
+		}
 		else { MountedWidget->RemoveFromParent(); }
 		MountedWidget = nullptr;
 	}
 	OnDialogueEnd.Broadcast();
 }
 
-void UPlayerDialogueComponent::WidgetSelectInput() 
+void UPlayerDialogueComponent::WidgetSelectInput_Implementation()
 {
 	// before we go to next dialogue option, we need to check if we have reached the end of the dialogue
 	if (!MountedWidget || !DialogueDataAsset) { return; }
@@ -107,8 +109,8 @@ void UPlayerDialogueComponent::WidgetSelectInput()
 	}	
 }
 
-void UPlayerDialogueComponent::WidgetUpInput() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) {	BaseWidget->WidgetUpInput(); }}}
-void UPlayerDialogueComponent::WidgetDownInput() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetDownInput(); }}}
-void UPlayerDialogueComponent::WidgetLeftInput() {	if (MountedWidget) {	if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) {	BaseWidget->WidgetLeftInput(); }}}
-void UPlayerDialogueComponent::WidgetRightInput() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetRightInput(); }}}
-void UPlayerDialogueComponent::WidgetBackInput() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetBackInput(); }}}
+void UPlayerDialogueComponent::WidgetUpInput_Implementation() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) {	BaseWidget->WidgetUpInput(); }}}
+void UPlayerDialogueComponent::WidgetDownInput_Implementation() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetDownInput(); }}}
+void UPlayerDialogueComponent::WidgetLeftInput_Implementation() {	if (MountedWidget) {	if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) {	BaseWidget->WidgetLeftInput(); }}}
+void UPlayerDialogueComponent::WidgetRightInput_Implementation() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetRightInput(); }}}
+void UPlayerDialogueComponent::WidgetBackInput_Implementation() { if (MountedWidget) { if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget)) { BaseWidget->WidgetBackInput(); }}}

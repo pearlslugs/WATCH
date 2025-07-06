@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MontageData/MontageStructs.h"
+#include "ItemData/ItemEnums.h"
 #include "MontageManagerComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnComboFinished);
@@ -44,6 +45,8 @@ public:
 	void SetOwnerMesh(USkeletalMeshComponent* Mesh) { OwnerMesh = Mesh; }
 	UFUNCTION(BlueprintCallable, Category = "Owner Mesh")
 	void PlaySelectedMontage(UAnimMontage* Montage);
+	UFUNCTION(BlueprintCallable)
+	UAnimMontage* GetPickUpMontage(EEquipmentSlot ItemEquipSlot);
 
 
 protected:
@@ -63,6 +66,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Owner Mesh")
 	USkeletalMeshComponent* OwnerMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Owner Mesh")
+	UAnimMontage* RightHandedPickUpMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Owner Mesh")
+	UAnimMontage* LeftHandedPickUpMontage;
 
 public:	
 	// Called every frame

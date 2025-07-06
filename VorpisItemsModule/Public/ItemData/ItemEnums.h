@@ -9,7 +9,9 @@ enum class EEquipSocketOption : uint8
 	EESO_OneHandedWeaponSocket UMETA(DisplayName = "OneHandedWeaponSocket"),
 	EESO_TwoHandedBaseGripSocket UMETA(DisplayName = "TwoHandedBaseGripSocket"),
 	EESO_TwoHandedPoleGripSocket UMETA(DisplayName = "TwoHandedPoleGripSocket"),
-	ESO_LeftHandOneHandedSlot UMETA(DisplayName = "LeftHandOneHandedSlot"),
+	EESO_LeftHandOneHandedSocket UMETA(DisplayName = "LeftHandOneHandedSocket"),
+	EESO_LeftHandSuitcaseHoldSocket UMETA(DisplayName = "LeftHandSuitcaseHoldSocket"),
+	EESO_RightHandToolSocket UMETA(DisplayName = "RightHandToolSocket"),
 };
 
 UENUM(BlueprintType)
@@ -78,6 +80,15 @@ enum class EToolProperties : uint8
 	ETP_Mining UMETA(DisplayName = "Mining"),
 	ETP_Sawing UMETA(DisplayName = "Sawing"),
 	ETP_Shearing UMETA(DisplayName = "Shearing"),
+	ETP_LiquidCarrying UMETA(DisplayName = "LiquidCarrying"),
+	ETP_Drilling UMETA(DisplayName = "Drilling"),
+};
+
+UENUM(BlueprintType)
+enum class ETaskType : uint8
+{
+	ETT_None UMETA(DisplayName = "None"),
+	ETT_GetFuel UMETA(DisplayName = "GetFuel"),
 };
 
 UENUM(BlueprintType)
@@ -104,6 +115,7 @@ enum class EWieldableItemType : uint8
 	EWIT_Pistol UMETA(DisplayName = "Pistol"),
 	EWIT_Rifle UMETA(DisplayName = "Rifle"),
 	EWIT_Tool UMETA(DisplayName = "Tool"),
+	EWIT_LeftHandSuitcaseHold UMETA(DisplayName = "LeftHandSuitcaseHold"),
 };
 
 UENUM(BlueprintType)
@@ -119,6 +131,7 @@ enum class EFoodType : uint8
 UENUM(BlueprintType)
 enum class EEquipmentLayerType : uint8
 {
+	EEL_None UMETA(DisplayName = "None"),
 	EEL_Under UMETA(DisplayName = "Under"),
 	EEL_Middle UMETA(DisplayName = "Middle"),
 	EEL_Outer UMETA(DisplayName = "Outer")
@@ -127,6 +140,7 @@ enum class EEquipmentLayerType : uint8
 UENUM(BlueprintType)
 enum class EArmorClass : uint8
 {
+	EAC_None UMETA(DisplayName = "None"),
 	EAC_Clothing UMETA(DisplayName = "Clothing"),
 	EAC_Light UMETA(DisplayName = "Light"),
 	EAC_Medium UMETA(DisplayName = "Medium"),

@@ -38,7 +38,8 @@ public class MontageManagerModule : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-            "CombatComponentModule"
+            "CombatComponentModule",
+            "VorpisItemsModule"
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

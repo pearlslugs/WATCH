@@ -32,6 +32,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Personality")
 	ECharacterPersonality GetCharacterPersonality() { return CurrentPersonality; };
 
+	UFUNCTION(BlueprintCallable, Category = "Task")
+	void SetCharacterTaskState(ETaskState NewState) { CharacterTaskState = NewState; }
+	UFUNCTION(BlueprintPure, Category = "Task")
+	ETaskState GetTaskState() { return CharacterTaskState; }
+	UFUNCTION(BlueprintCallable, Category = "Task")
+	void SetCharacterTaskStep(int NewStep) { TaskStep = NewStep; }
+	UFUNCTION(BlueprintPure, Category = "Task")
+	int GetTaskStep() { return TaskStep; }
 
 protected:
 	// Called when the game starts
@@ -39,10 +47,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character State")
 	EGeneralState CurrentCharacterState = EGeneralState::EGS_None;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character State")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat State")
 	ECombatState CurrentCombatState = ECombatState::ECS_None;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character State")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Personality")
 	ECharacterPersonality CurrentPersonality = ECharacterPersonality::ECP_None;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task State")
+	ETaskState CharacterTaskState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task State")
+	int TaskStep = 0;
 
 
 public:	

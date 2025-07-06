@@ -66,10 +66,10 @@ ECombatPosition UBaseCmbatComponent::GetCombatPositionFromVector2D(FVector2D Dir
 {
 	if (PositionLock) return ECombatPosition::ECP_None;
 	if (Direction.X < 0.2f && Direction.Y < 0.2) return ECombatPosition::ECP_None;
-	if (Direction.X > 0.5 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y)) return ECombatPosition::ECP_Right;
-	if (Direction.X < -0.3 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y) - 0.1) return ECombatPosition::ECP_Left;
-	if (Direction.Y > 0.5) return ECombatPosition::ECP_High;
-	if (Direction.Y < -0.3) return ECombatPosition::ECP_Low;
+	if (Direction.X > 0.2 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y)) return ECombatPosition::ECP_Right;
+	if (Direction.X < -0.2 && FMath::Abs(Direction.X) > FMath::Abs(Direction.Y) - 0.1) return ECombatPosition::ECP_Left;
+	if (Direction.Y > 0.2) return ECombatPosition::ECP_High;
+	if (Direction.Y < -0.2) return ECombatPosition::ECP_Low;
 	return ECombatPosition::ECP_None;
 }
 

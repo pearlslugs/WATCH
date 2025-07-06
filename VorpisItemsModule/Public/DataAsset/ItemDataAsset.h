@@ -14,6 +14,24 @@
 /**
  * 
  */
+
+
+USTRUCT(BlueprintType)
+struct FStaticMeshArmorStruct
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Static Mesh")
+	UStaticMesh* ArmorStaticMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Static Mesh")
+	int Index = -1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Static Mesh")
+	FName AttachSocket = FName("None");
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Static Mesh")
+	FVector Offset = FVector();
+
+};
+
 UCLASS()
 class VORPISITEMSMODULE_API UItemDataAsset : public UDataAsset
 {
@@ -43,16 +61,25 @@ public:
 	TArray<USkeletalMesh*> SkeletalMeshes; // armor or unique items 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
 	bool UseSkeletalMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
+	bool UseStaticMeshArray;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
+	TArray<FStaticMeshArmorStruct> StaticMeshArray;
+
 
 	// equipment data
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equip")
 	EEquipmentSlot EquipmentSlot;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equip")
+	bool CanGoInQuickslots;
 	
 	// socket data
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Socket")
 	EEquipSocketOption EquipSocketOption;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Socket")
 	EUnequipSocketOption UnequipSocketOption;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Socket")
+	FVector Offset;
 
 	// weildable data
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weildable")
@@ -63,6 +90,8 @@ public:
 	EWieldableItemType WieldableItemType;
 
 	// damage data
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	bool CanAttack;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
 	TMap<EPhysicalDamageType, int> DamageMap;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
@@ -105,12 +134,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Armor")
 	int Coverage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tool")
+	bool IsTool;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tool")
+	TMap<EToolProperties, int> ToolProperties;
+	// pick up data
+	FVector PickupScale = FVector(1);
+
+	// animation data
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* PrimaryUseAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* SecondaryUseAnimation;
 
 	FName GetEquipSocketName() {
 		switch (EquipSocketOption)
 		{
-			case EEquipSocketOption::ESO_LeftHandOneHandedSlot:
-				return FName("LeftHandOneHandedSlot");
+		case EEquipSocketOption::EESO_LeftHandOneHandedSocket:
+				return FName("LeftHandOneHandedSocket");
 				break;
 			case EEquipSocketOption::EESO_OneHandedWeaponSocket:
 				return FName("OneHandedWeaponSocket");
@@ -120,6 +161,12 @@ public:
 				break;
 			case EEquipSocketOption::EESO_TwoHandedPoleGripSocket:
 				return FName("TwoHandedPoleGripSocket");
+				break;
+			case EEquipSocketOption::EESO_LeftHandSuitcaseHoldSocket:
+				return FName("LeftHandSuitcaseHoldSocket");
+				break;
+			case EEquipSocketOption::EESO_RightHandToolSocket:
+				return FName("RightHandToolSocket");
 				break;
 		}
 		return FName("null");

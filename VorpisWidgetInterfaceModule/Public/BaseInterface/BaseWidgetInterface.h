@@ -23,12 +23,35 @@ class VORPISWIDGETINTERFACEMODULE_API IBaseWidgetInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void WidgetUpInput();
-	virtual void WidgetDownInput();
-	virtual void WidgetLeftInput();
-	virtual void WidgetRightInput();
-	virtual void WidgetSelectInput();
-	virtual void WidgetBackInput();
-	virtual void SetContent(FString Content) {};
-	virtual void CloseWidget() {};
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetUpInput();
+	virtual void WidgetUpInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetDownInput();
+	virtual void WidgetDownInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetLeftInput();
+	virtual void WidgetLeftInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetRightInput();
+	virtual void WidgetRightInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetSelectInput();
+	virtual void WidgetSelectInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void WidgetBackInput();
+	virtual void WidgetBackInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void SetContent(const FString& Content);
+	virtual void SetContent_Implementation(const FString& Content) {};
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
+	void CloseWidget();
+	virtual void CloseWidget_Implementation() {};
 };

@@ -28,6 +28,7 @@ public class VorpisCharacterInterfaceModule : ModuleRules
 				"Core",
             "VorpisCharacterStateModule",
 				"UMG",
+            "VorpisItemsModule",
             "VorpisDialogueModule",
             "CombatComponentModule"
 				// ... add other public dependencies that you statically link with here ...

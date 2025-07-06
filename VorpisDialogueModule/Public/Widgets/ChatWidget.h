@@ -61,6 +61,6 @@ public:
 
 	// interfaces
 
-	virtual void SetContent(FString Content);	
-	virtual void CloseWidget();
+	virtual void SetContent_Implementation(const FString& Content) override;
+	virtual void CloseWidget_Implementation() override;
 };

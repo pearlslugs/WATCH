@@ -13,9 +13,17 @@ enum class EGeneralState : uint8
 	EGS_None UMETA(DisplayName = "None"),
 	EGS_Combat UMETA(DisplayName = "Combat"),
 	EGS_InConversation UMETA(DisplayName = "InConversation"),
-	EGS_FixingEquipment UMETA(DisplayName = "FixingEquipment"),
+	EGS_IKTask UMETA(DisplayName = "IKTask"),
+	EGS_NonIKTask UMETA(DisplayName = "NonIkTask"),
 	EGS_Disabled UMETA(DisplayName = "Disabled"),
 	EGS_Dead UMETA(DisplayName = "Dead"),
+};
+
+UENUM(BlueprintType)
+enum class ETaskState : uint8
+{
+	ETS_None UMETA(DisplayName =  "None"),
+	ETS_HarvestFuelPlant UMETA(DisplayName = "HarvestFuelPlant"),
 };
 
 UENUM(BlueprintType)

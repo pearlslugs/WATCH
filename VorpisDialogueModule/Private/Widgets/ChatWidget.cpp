@@ -25,7 +25,7 @@ void UChatWidget::UpdateFinalChatContentLetterByLetter()
 	}
 }
 
-void UChatWidget::SetContent(FString Content)
+void UChatWidget::SetContent_Implementation(const FString& Content)
 {
 	UpdateChatContent(Content);
 }
@@ -38,7 +38,7 @@ void UChatWidget::UpdateChatContent(FString NewChatContent)
 	UpdateFinalChatContentLetterByLetter();
 }
 
-void UChatWidget::CloseWidget() 
+void UChatWidget::CloseWidget_Implementation() 
 {
 	UChatWidget::EndDialogue();
 };

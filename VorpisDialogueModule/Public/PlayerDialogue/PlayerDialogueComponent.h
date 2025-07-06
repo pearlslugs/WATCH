@@ -56,10 +56,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void WidgetUpInput() override;
-	virtual void WidgetDownInput() override;
-	virtual void WidgetLeftInput() override;
-	virtual void WidgetRightInput() override;
-	virtual void WidgetBackInput() override;
-	virtual void WidgetSelectInput() override;
+	virtual void WidgetUpInput_Implementation() override;
+	virtual void WidgetDownInput_Implementation() override;
+	virtual void WidgetLeftInput_Implementation() override;
+	virtual void WidgetRightInput_Implementation() override;
+	virtual void WidgetBackInput_Implementation() override;
+	virtual void WidgetSelectInput_Implementation() override;
 };

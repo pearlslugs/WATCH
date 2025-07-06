@@ -23,6 +23,9 @@ public:
 	FTimerHandle FreeUpNpcTimer;
 	float FreeUpNpcTimerRate = 3.f;
 	bool TimerCalled = false;
+	FTimerHandle ClearAttackCoolDownTimer;
+	float ClearAttackCoolDownTimerRate = 4.f;
+	bool AttackCoolDownTimerCalled = false;
 
 	UNpcDecisionService(const FObjectInitializer& ObjectInitializer);
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
@@ -45,6 +48,8 @@ public:
 
 	UFUNCTION()
 	void FreeUpCharacter();
+	UFUNCTION()
+	void ClearAttackCoolDown();
 
 
 protected:

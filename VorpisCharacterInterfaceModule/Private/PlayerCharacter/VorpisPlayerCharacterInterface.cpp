@@ -18,3 +18,9 @@ void IVorpisPlayerCharacterInterface::ToggleSelectedEquipmentEquipped_Implementa
 {
 	// implement
 }
+
+TArray<FItemData> IVorpisPlayerCharacterInterface::GetEquippedItems_Implementation()
+{
+	TArray<FItemData> Empty;
+	return Empty;
+}

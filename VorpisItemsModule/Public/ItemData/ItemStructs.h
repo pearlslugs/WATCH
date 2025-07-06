@@ -58,6 +58,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GeneralItem")
 	FGuid InitialItemGuid; // for look up i guess
 
+	// tasks
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tasks")
+	TMap<ETaskType, bool> CompletedTasksMap;
 
 };
 
@@ -67,7 +70,21 @@ struct FPickUpData
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	FItemData ItemData;
+	FItemData ItemData = FItemData();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-	FVector Location;
+	FVector Location = FVector();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Active = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DroppedInToWorld = false;
+};
+
+USTRUCT(BlueprintType)
+struct FToolCompareType {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Success;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> ErrorMessages;
 };

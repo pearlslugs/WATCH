@@ -26,6 +26,12 @@ public class VorpisInteractableModule : ModuleRules
 			new string[]
 			{
 				"Core",
+				"ALSCamera",
+                "CoreUObject",
+				"Engine",
+				"UMG",
+                "VorpisItemsModule",
+                "VorpisCharacterStateModule",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,7 +43,9 @@ public class VorpisInteractableModule : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
+                "UMG",
+                "SlateCore",
+				"ALSCamera",
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

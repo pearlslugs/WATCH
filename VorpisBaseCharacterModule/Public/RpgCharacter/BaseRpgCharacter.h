@@ -36,6 +36,8 @@ public:
 	ABaseRpgCharacter();
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+	FTimerHandle AddMovementTimer;
+	float AddMovementTime = 0.01f;
 	UPROPERTY(BlueprintAssignable)
 	FOnCharacterDisabled OnCharacterDisabled;
 
@@ -55,9 +57,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DodgeInDirection(EDodgeDirection DodgeDirection);
 
+	// movement
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FVector MovementTargetLocation;
+	UFUNCTION(BlueprintCallable) 
+	void SetMovementTargetLocation(FVector NewTarget) { MovementTargetLocation = NewTarget; }
+	UPROPERTY(BlueprintReadOnly)
+	float DesiredDistanceFromTarget;
+	void SetDesiredDistanceFromTarget(float NewDistance) { DesiredDistanceFromTarget = NewDistance; }
+
 	// equipment
-	UFUNCTION()
-	void CreateOrDestroyEquipmentMeshes(FItemData Newtem, bool CreateOrDestroy);
+	UFUNCTION(BlueprintCallable)
+	void CreateOrDestroyEquipmentMeshes(FItemData Newtem, bool CreateOrDestroy, bool EquipSocket, bool RightHand);
 	UFUNCTION()
 	void InitializeEquippedItems() {};
 
@@ -99,10 +110,16 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	// TODO picking up stuff off the ground
 	void EquipPickUp(FItemData Item, UStaticMesh* ItemStaticMesh, USkeletalMesh* ItemSkeletalMesh) {};
+	UFUNCTION()
+	void AttachStaticArmorParts(TArray< FStaticMeshArmorStruct> ArmorArry, EEquipmentSlot EquipmentSlot);
+	UFUNCTION()
+	void AttachArmorSkeletalMesh(TArray<USkeletalMesh*> Meshes, EEquipmentSlot EquipmentSlot, FItemData Item);
 	UFUNCTION(BlueprintCallable)
 	void UnequipItem(FItemData Item);
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<FGuid, UStaticMeshComponent*> EquipmentMeshes;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<EBodyPart, FStaticMeshComponentArray> ArmorStaticMeshPiecesPerBodyPart;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TMap<FGuid, USkeletalMeshComponent*> EquipmentSKMeshes;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -115,7 +132,6 @@ protected:
 	FFinishedAttackStruct MakeAttack(FHitTraceResults HitTraceResults);
 	UFUNCTION()
 	ECombatPosition AdjustCombatPosition(ECombatPosition CurrentPosition);
-
 
 public:
 	// interfaces

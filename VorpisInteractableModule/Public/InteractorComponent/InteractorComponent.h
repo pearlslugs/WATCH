@@ -5,9 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Components/SphereComponent.h"
+#include "AlsCameraComponent.h"
 #include "InteractorComponent.generated.h"
 
 class UCameraComponent;
+class IInteractableInterface;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FShowIntneractPrompt, bool, Show);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class VORPISINTERACTABLEMODULE_API UInteractorComponent : public UActorComponent
@@ -17,15 +21,24 @@ class VORPISINTERACTABLEMODULE_API UInteractorComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UInteractorComponent();
+	UPROPERTY(BlueprintAssignable)
+	FShowIntneractPrompt ShowIntneractPrompt;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
 	float InteractionDistance = 200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
 	AActor* OwnerActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
-	bool CheckForInteractable = false;
+	bool CheckForInteractable = true;
+	UFUNCTION()
+	void SetCheckForInteractable(bool Condition) { CheckForInteractable = Condition; }
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
 	AActor* CurrentInteractable;
+	UFUNCTION(BlueprintPure)
+	AActor* GetCurrentInteractable() { return CurrentInteractable; }
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
+	AActor* PreviousInteractable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
 	bool CanInteract = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactor")
@@ -47,11 +60,15 @@ public:
 	void StopCheckingForInteractables();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool FirstPerson;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UCameraComponent* OwnerCamera;
+	bool FirstPerson = true;
 	UFUNCTION(BlueprintCallable)
-	void SetCameraOwner(UCameraComponent* NewCamera) { OwnerCamera = NewCamera; }
+	void SetFirstPerson(bool NewFirstPerson) { FirstPerson = NewFirstPerson; }
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UAlsCameraComponent* AlsCamera;
+	UFUNCTION(BlueprintCallable)
+	void SetCameraOwner(UAlsCameraComponent* NewCamera) { AlsCamera = NewCamera; }
+	UFUNCTION()
+	void AssessInteractable(AActor* ActorReference);
 
 protected:
 	// Called when the game starts

@@ -2,6 +2,7 @@
 
 #include "StatsData/StatusStats/StatusEnums.h"
 #include "ItemData/ItemEnums.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "ItemData/WeaponData/WeaponEnums.h"
 #include "GeneralData.generated.h"
 
@@ -12,6 +13,24 @@ enum class EStrafingMovementDirection : uint8
 	ESMD_Backward UMETA(DisplayName = "Backward"),
 	ESMD_Left UMETA(DisplayName = "Left"),
 	ESMD_Right UMETA(DisplayName = "Right"),
+	ESMD_None UMETA(DisplayName = "None"),
+};
+
+UENUM(BlueprintType)
+enum class EHandIkState : uint8
+{
+	EHIS_None UMETA(DisplayName = "None"),
+	EHIS_Left UMETA(DisplayName = "Left"),
+	EHIS_Right UMETA(DisplayName = "Right"),
+	EHIS_Both UMETA(DisplayName = "Both"),
+};
+
+UENUM(BlueprintType)
+enum class EIkMovementState : uint8
+{
+	EIMS_None UMETA(DisplayName = "None"),
+	EIMS_UpAndDown UMETA(DisplayName = "None"),
+	EIMS_BackAndForth UMETA(DisplayName = "None"),
 };
 
 USTRUCT(BlueprintType)
@@ -29,6 +48,14 @@ struct FCoalatedProtectionMap
 		ProtectionMap.Add(EPhysicalDamageType::EPDT_Pierce, 0);
 		ProtectionMap.Add(EPhysicalDamageType::EPDT_Slash, 0);
 	};
+};
+
+USTRUCT(BlueprintType)
+struct FStringArray
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FString> StringArray;
 };
 
 USTRUCT(BlueprintType)
@@ -146,6 +173,7 @@ public:
 		TotalDamage += (ProtectionMap[PrimaryDamage] - DamageMap[PrimaryDamage]);
 		return TotalDamage;
 	}
+
 	static TMap<EPhysicalDamageType, int> CollateProtectionMaps(TMap<EPhysicalDamageType, int> ExistingMap, TMap<EPhysicalDamageType, int> AdditionalMap)
 	{
 		TMap<EPhysicalDamageType, int> NewMap;
@@ -171,4 +199,32 @@ public:
 			));
 		return NewMap;
 	}
+	static bool GetRotatorsNearlyMatch(FRotator RotatorOne, FRotator RotatorTwo) {
+		float RotationTolerence = 0.1f;
+
+		float RotatorOneYaw = RotatorOne.Yaw;
+		float RotatorTwoYaw = RotatorTwo.Yaw;
+
+		float RotatorOneRoll = RotatorOne.Roll;
+		float RotatorTwoRoll = RotatorTwo.Roll;
+
+		float RotatorOnePitch = RotatorOne.Pitch;
+		float RotatorTwoPitch = RotatorTwo.Pitch;
+
+		if (UKismetMathLibrary::NearlyEqual_FloatFloat(RotatorOneYaw, RotatorTwoYaw, RotationTolerence) &&
+			UKismetMathLibrary::NearlyEqual_FloatFloat(RotatorOneRoll, RotatorTwoRoll, RotationTolerence) &&
+			UKismetMathLibrary::NearlyEqual_FloatFloat(RotatorOnePitch, RotatorTwoPitch, RotationTolerence)) {
+			return true;
+		}
+		return false;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FStaticMeshComponentArray
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+	TArray<UStaticMeshComponent*> Meshes;
 };

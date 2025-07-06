@@ -31,5 +31,7 @@ public class WATCHEditorTarget : TargetRules
       ExtraModuleNames.Add("VorpisDialogueModule");
       ExtraModuleNames.Add("VorpisWidgetInterfaceModule");
       ExtraModuleNames.Add("VorpisAttackAndDefenceWheel");
+      ExtraModuleNames.Add("VorpisPlantsModule");
+      ExtraModuleNames.Add("VorpisFurnatureModule");
    }
 }

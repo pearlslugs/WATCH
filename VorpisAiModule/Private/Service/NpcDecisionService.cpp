@@ -80,9 +80,6 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	// if stuck strafing or attacking
 	// all of the below logic should only be if they are fighting
 	// make combat logic funciton to call
-	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Emerald, FString::FromInt((int)CombatState));
-	}
 	if (CombatState == 2 || CombatState == 13 || CombatState == 5) {
 		if (!TimerCalled)
 		{
@@ -107,12 +104,25 @@ void UNpcDecisionService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 			else {
 				float Random = FMath::FRandRange(0.0f, 1.0f);
 				bool OnStrafeCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnStrafeCoolDown);
-				bool OnCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnAtackCoolDown);
+				bool OnAttackCoolDown = GetBlackboardComponent()->GetValueAsBool(BBKeys::OnAtackCoolDown);
+				if (OnAttackCoolDown && !AttackCoolDownTimerCalled)
+				{
+					AttackCoolDownTimerCalled = true;
+					GetWorld()->GetTimerManager().SetTimer(ClearAttackCoolDownTimer, this, &UNpcDecisionService::ClearAttackCoolDown, ClearAttackCoolDownTimerRate, false);
+				}
+				if (!TimerCalled)
+				{
+					TimerCalled = true;
+					GetWorld()->GetTimerManager().SetTimer(FreeUpNpcTimer, this, &UNpcDecisionService::FreeUpCharacter, FreeUpNpcTimerRate, false);
+				}
+				if (OnStrafeCoolDown && OnAttackCoolDown) {
+					OnStrafeCoolDown = false;
+				}
 				if (OnStrafeCoolDown) {
 					// if we are  on strafe cool down
-					GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
-					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
-				} else if (Random < 0.70f && !OnCoolDown) {
+					// GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
+					// GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
+				} else if (Random < 0.70f && !OnAttackCoolDown) {
 					GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 1);
 				}
 				else {
@@ -147,4 +157,9 @@ void UNpcDecisionService::FreeUpCharacter()
 		GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
 	}
 	TimerCalled = false;
+}
+void UNpcDecisionService::ClearAttackCoolDown()
+{
+	AttackCoolDownTimerCalled = false;
+	GetBlackboardComponent()->SetValueAsBool(BBKeys::OnAtackCoolDown, false);
 }

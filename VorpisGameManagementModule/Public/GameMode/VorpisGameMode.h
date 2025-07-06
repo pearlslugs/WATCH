@@ -21,18 +21,11 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	
-	// interfaces
-	virtual void InterfaceSaveNewPickUp(FPickUpData ItemToSave) { SaveNewPickUp(ItemToSave); };
-	virtual TMap<FGuid, FPickUpData> InterfaceLoadAllPickups() { return LoadAllPickups(); };
-
-
-
-
 
 	// save game
 
@@ -42,6 +35,7 @@ public:
 	void SaveGameToSlot();
 	UFUNCTION()
 	void CreateSaveObject();
+	UPROPERTY()
 	FString SlotName = "CHARACTER_Doug";
 	UFUNCTION(BlueprintCallable, Category = "SaveGame")
 	void SetSelectedGameSlotName(FString NewSelectedGameSlotName) { SlotName = NewSelectedGameSlotName; };
@@ -53,18 +47,70 @@ public:
 	void MakeNewSaveSlot(FString NewSlotName);
 
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UVorpisSaveGameObject* VorpisSaveGameObject;
 
 
 
 	//_______________________________________________________________________________________________
 	// item data
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SaveNewPickUp(FPickUpData ItemToSave);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	TMap<FGuid, FPickUpData> LoadAllPickups();
+	UFUNCTION(BlueprintCallable)
+	void SaveQuickslots(const TMap<int, FItemData>& PlayerQuickslots);
+	UFUNCTION(BlueprintCallable)
+	TMap<int, FItemData> LoadQuickslots();
 
+	// player equipment
 	//_______________________________________________________________________________________________
+
+	// equipment 
+	virtual void InterfaceSavePlayerEquipment_Implementation(const TMap<EEquipmentSlot, FItemData>& NewPlayerEquipment) override;
+	UFUNCTION(BlueprintCallable)
+	void SavePlayerEquipment(const TMap<EEquipmentSlot, FItemData>& NewPlayerEquipment);
+	virtual TMap<EEquipmentSlot, FItemData> InterfaceLoadPlayerEquipment_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	TMap<EEquipmentSlot, FItemData> LoadPlayerEquipment();
 	
+	// quick slots
+	virtual void InterfaceSaveQuickslots_Implementation(const TMap<int, FItemData>& PlayerEquipment) override;
+	virtual TMap<int, FItemData> InterfaceLoadQuickslots_Implementation() override;
+
+	// held weapons
+	virtual void InterfaceSaveRightHandItem_Implementation(const FItemData& Item) override;
+	UFUNCTION(BlueprintCallable)
+	void SaveRightHandItem(const FItemData& Item);
+	virtual void InterfaceSaveLeftHandItem_Implementation(const FItemData& Item) override;
+	UFUNCTION(BlueprintCallable)
+	void SaveLeftHandItem(const FItemData& Item);
+
+	virtual FItemData InterfaceLoadRightHandItem_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	FItemData LoadRightHandItem();
+	virtual FItemData InterfaceLoadLeftHandItem_Implementation() override;
+	UFUNCTION(BlueprintCallable)
+	FItemData LoadLeftHandItem();
+
+
+	// pickups
+	//_______________________________________________________________________________________________
+
+	// load
+	virtual FPickUpData InterfaceLoadSinglePickup_Implementation(FGuid PickupGuid) override;
+	UFUNCTION(BlueprintCallable)
+	FPickUpData LoadSinglePickup(FGuid PickupGuid);
+	virtual TMap<FGuid, FPickUpData> InterfaceLoadAllPickups_Implementation() override;
+	
+	// save
+	virtual void InterfaceSaveNewPickUp_Implementation(const FPickUpData& NewPickUp) override {};
+	// delete
+	void InterfaceDeleteSinglePickUp_Implementation(FGuid PickUpGuid);
+	UFUNCTION(BlueprintCallable)
+	void DeleteSinglePickUp(FGuid PickUpGuid);
+	// put
+	void InterfacePutSinglePickUp_Implementation(FPickUpData ItemToPut);
+	UFUNCTION(BlueprintCallable)
+	void PutSinglePickUp(FPickUpData ItemToPut);
 };

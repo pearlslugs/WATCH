@@ -39,6 +39,7 @@ enum class EBufferKey : uint8
 	EBK_AdjustLeftHandTool UMETA(DisplayName = "AdjustLeftHandTool"),
 	EBK_PutAwayLeftHandTool UMETA(DisplayName = "PutAwayLeftHandTool"),
 	EBK_Kick UMETA(DisplayName = "Kick"),
+	EBK_LeftHandSecondaryAction UMETA(DisplayName = "LeftHandSecondaryAction"),
 };
 
 UENUM(BlueprintType)

@@ -34,9 +34,6 @@ EBTNodeResult::Type UBTTask_AttackPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 		//float AngleToPlayer = FVector::DotProduct(AIController->GetPawn()->GetActorForwardVector(), (Target->GetActorLocation() - AIController->GetPawn()->GetActorLocation()).GetSafeNormal());
 		if (Distance > AttackRange)
 		{
-			if (GEngine) {
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, "should switch to none");
-			}
 			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(BBKeys::AiCombatState, 0);
 		}
 		if (INpcInterface* NpcInterface = Cast<INpcInterface>(ControlledPawnAsActor))

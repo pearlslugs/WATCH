@@ -90,7 +90,6 @@ void UWeaponCollisionComponent::TraceForHits()
 				{
 					IgnoredActors.Add(HitActor);
 					IBaseRpgCharacterInterface* InterfaceActor = Cast<IBaseRpgCharacterInterface>(HitActor);
-
 					if (InterfaceActor)
 					{
 						FHitTraceResults CurrentHitTraceResults;
@@ -116,11 +115,10 @@ void UWeaponCollisionComponent::ToggleGate(bool Open)
 	if (!Open)
 	{
 
-		IgnoredActors.Empty();
 		return;
 	}
 	else {
-		ItemStaticMesh->SetGenerateOverlapEvents(true);
+		IgnoredActors.Empty();
 	}
 }
 

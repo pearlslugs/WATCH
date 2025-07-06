@@ -88,7 +88,6 @@ void AVorpisBaseNpc::Attack()
 		if (!GetWorld()->GetTimerManager().IsTimerActive(ResetAttackCoooldownTimer)) {
 			GetWorld()->GetTimerManager().SetTimer(ResetAttackCoooldownTimer, this, &AVorpisBaseNpc::ResetAttackCooldown, ResetAttackCooldownTime, false);
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "On Cool Down");
 		GetBlackboardComponent()->SetValueAsEnum("CombatState", (uint8)0);
 		GetBlackboardComponent()->SetValueAsInt("HitCounter", 0);
 		return;
@@ -105,7 +104,6 @@ void AVorpisBaseNpc::Attack()
 	int HitCounter = GetBlackboardComponent()->GetValueAsInt("HitCounter");
 	if (HitCounter > MaxHitCounter) {
 		StartAttackCoolDown();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "hit max reached");
 		// he should strafe, dodge or stand his ground
 		// right now he goes back to the idle state
 		GetBlackboardComponent()->SetValueAsInt("HitCounter", 0);
@@ -121,6 +119,7 @@ void AVorpisBaseNpc::Attack()
 		CombatComponent->IncrimentComboCount();
 		PlayAnimMontage(Montage);
 		AttackStarted = true;
+		OnBroadcastAttack.Broadcast(Position);
 		GetWorld()->GetTimerManager().SetTimer(ClearAttackStartedTimer, this, &AVorpisBaseNpc::ClearAttackStarted, ClearAttackStartedTime, false);
 		GetBlackboardComponent()->SetValueAsInt("HitCounter", HitCounter + 1);
 	}
@@ -181,9 +180,6 @@ void AVorpisBaseNpc::StopStrafing()
 
 void AVorpisBaseNpc::Strafe()
 {
-	if (!GEngine) {
-		return;
-	}
 	float CurrentStrafeTime = GetBlackboardComponent()->GetValueAsFloat("StrafeTime");
 	float MaxStrafeTime = GetBlackboardComponent()->GetValueAsFloat("MaxStrafeTime");
 	AActor* Target = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject("Target"));

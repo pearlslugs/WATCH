@@ -17,6 +17,7 @@ void AVorpisPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	SetControlledActor(GetPawn());
+	//SetMountedWidget(QuickslotsWidget);
 }
 
 void AVorpisPlayerController::SetupInputComponent()
@@ -85,7 +86,7 @@ void AVorpisPlayerController::Input_ControllerLeft()
 	{
 		if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget))
 		{
-			BaseWidget->WidgetLeftInput();
+			IBaseWidgetInterface::Execute_WidgetLeftInput(MountedWidget);
 		}
 	}
 	else if (MountedComponent)
@@ -107,7 +108,7 @@ void AVorpisPlayerController::Input_ControllerRight()
 	{
 		if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget))
 		{
-			BaseWidget->WidgetRightInput();
+			IBaseWidgetInterface::Execute_WidgetRightInput(MountedWidget);
 		}
 	}
 	else if (MountedComponent)
@@ -129,7 +130,7 @@ void AVorpisPlayerController::Input_ControllerSelect()
 	{
 		if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget))
 		{
-			BaseWidget->WidgetSelectInput();
+			IBaseWidgetInterface::Execute_WidgetSelectInput(MountedWidget);
 		}
 	}
 	else if (MountedComponent)
@@ -146,7 +147,7 @@ void AVorpisPlayerController::Input_ControllerBack()
 	{
 		if (IBaseWidgetInterface* BaseWidget = Cast<IBaseWidgetInterface>(MountedWidget))
 		{
-			BaseWidget->WidgetBackInput();
+			IBaseWidgetInterface::Execute_WidgetBackInput(MountedWidget);
 		}
 	}
 	else if (MountedComponent)
@@ -164,5 +165,19 @@ void AVorpisPlayerController::Input_ControllerStart()
 		if (IVorpisPlayerCharacterInterface* PlayerCharacter = Cast<IVorpisPlayerCharacterInterface>(ControlledActor)) {
 			PlayerCharacter->ControllerInputStart();
 		}
+	}
+}
+
+// here we can set defaults or change what widget should be used based on state
+// quickslots is sort of like default
+void AVorpisPlayerController::SetControllerMenuType(EControllerMenuType NewMenu) 
+{
+	CurrentMenu = NewMenu; 
+	switch (NewMenu) {
+	case EControllerMenuType::ECMT_Quickslots:
+		SetMountedWidget(QuickslotsWidget);
+		break;
+	default:
+		break;
 	}
 }

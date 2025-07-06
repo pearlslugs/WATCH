@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MontageManagerComponent/MontageManagerComponent.h"
+#include "ItemData/ItemEnums.h"
 
 // Sets default values for this component's properties
 UMontageManagerComponent::UMontageManagerComponent()
@@ -99,6 +99,24 @@ UAnimMontage* UMontageManagerComponent::GetDodgeMontage(EDodgeDirection DodgeDir
 		if (IsValid(Montage)) {
 			return Montage;
 		}
+	}
+	return nullptr;
+}
+
+UAnimMontage* UMontageManagerComponent::GetPickUpMontage(EEquipmentSlot ItemEquipSlot)
+{
+	UAnimMontage* MontageToUse = nullptr;
+	switch (ItemEquipSlot)
+	{
+	case EEquipmentSlot::EES_LeftHand:
+		MontageToUse = LeftHandedPickUpMontage;
+		break;
+	default:
+		MontageToUse = RightHandedPickUpMontage;
+		break;
+	}
+	if (IsValid(MontageToUse)) {
+		return MontageToUse;
 	}
 	return nullptr;
 }

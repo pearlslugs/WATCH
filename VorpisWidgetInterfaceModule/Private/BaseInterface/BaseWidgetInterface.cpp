@@ -5,10 +5,10 @@
 
 // Add default functionality here for any IBaseWidgetInterface functions that are not pure virtual.
 
-void IBaseWidgetInterface::WidgetUpInput() {}
-void IBaseWidgetInterface::WidgetDownInput() {}
-void IBaseWidgetInterface::WidgetLeftInput() {}
-void IBaseWidgetInterface::WidgetRightInput() {}
-void IBaseWidgetInterface::WidgetSelectInput() {}
-void IBaseWidgetInterface::WidgetBackInput() {}
+void IBaseWidgetInterface::WidgetUpInput_Implementation() {}
+void IBaseWidgetInterface::WidgetDownInput_Implementation() {}
+void IBaseWidgetInterface::WidgetLeftInput_Implementation() {}
+void IBaseWidgetInterface::WidgetRightInput_Implementation() {}
+void IBaseWidgetInterface::WidgetSelectInput_Implementation() {}
+void IBaseWidgetInterface::WidgetBackInput_Implementation() {}
 

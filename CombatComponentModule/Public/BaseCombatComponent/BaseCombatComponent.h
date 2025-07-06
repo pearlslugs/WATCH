@@ -19,7 +19,7 @@ public:
 	// Sets default values for this component's properties
 	UBaseCmbatComponent();
 	FTimerHandle ResetPositionLockTimer;
-	float PositionLockTime = 0.2f;
+	float PositionLockTime = 0.1f;
 	FTimerDynamicDelegate CallUnlockPosition;
 	UFUNCTION()
 	void ResetPositionLock();

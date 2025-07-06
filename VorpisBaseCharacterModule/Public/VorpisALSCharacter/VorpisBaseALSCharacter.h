@@ -134,6 +134,12 @@ protected:
 	TObjectPtr<UInputAction> KickAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")
 	TObjectPtr<UInputAction> MenuSelectAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")
+	TObjectPtr<UInputAction>RightHandTaskPrimaryAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")
+	TObjectPtr<UInputAction>RightHandTaskSecondaryAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input")
+	TObjectPtr<UInputAction>MashTaskInput;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings|Input", Meta = (ClampMin = 0, ForceUnits = "x"))
 	float LookUpMouseSensitivity{ 3.0f };
@@ -154,7 +160,7 @@ public:
 
 	virtual void NotifyControllerChanged() override;
 	UFUNCTION(BlueprintCallable)
-	void Input_OnMove(const FInputActionValue& ActionValue);
+	virtual void Input_OnMove(const FInputActionValue& ActionValue);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool DisableWalking = false;

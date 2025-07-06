@@ -16,6 +16,8 @@
  * 
  */
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBroadcastAttack, ECombatPosition, CombatPosition);
+
 class AAiController;
 class UBlackboardComponent;
 
@@ -26,6 +28,8 @@ class VORPISNPCMODULE_API AVorpisBaseNpc : public ABaseRpgCharacter, public INpc
 
 public:
 	AVorpisBaseNpc();
+	UPROPERTY(BlueprintAssignable)
+	FOnBroadcastAttack OnBroadcastAttack;
 	// ai timers
 	FTimerHandle ResetAttackCoooldownTimer;
 	float ResetAttackCooldownTime = 3.0f;

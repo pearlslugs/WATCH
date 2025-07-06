@@ -96,9 +96,8 @@ void ULockOnComponent::LockOn(bool LockOn)
 	{
 		TArray<AActor*> HitCharacters;
 		TArray<FHitResult> HitResults;
-		FCollisionShape TraceSphere = FCollisionShape::MakeSphere(500.0f);
+		FCollisionShape TraceSphere = FCollisionShape::MakeSphere(1500.0f);
 		GetWorld()->SweepMultiByChannel(HitResults, GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + FVector(0,0,2), FQuat::Identity, ECC_Pawn, TraceSphere);
-		DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), 500.0f, 12, FColor::Red, false, 1.0f);
 		for (auto& HitResult : HitResults) {
 			if (HitResult.GetActor() == CharacterOwner) continue;
 			IBaseRpgCharacterInterface* HitCharacter = Cast<IBaseRpgCharacterInterface>(HitResult.GetActor());

@@ -9,6 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Utility/AlsVector.h"
 #include "EnhancedInputSubsystems.h"
 
 ABaseRpgCharacter::ABaseRpgCharacter()
@@ -32,9 +33,76 @@ void ABaseRpgCharacter::BeginPlay()
 	EquipmentComponent->AffectEquipmentStaticMeshes.AddDynamic(this, &ABaseRpgCharacter::CreateOrDestroyEquipmentMeshes);
 }
 
+void ABaseRpgCharacter::AttachStaticArmorParts(TArray< FStaticMeshArmorStruct> ArmorArry, EEquipmentSlot EquipmentSlot)
+{ 
+	int MeshesLength = ArmorArry.Num();
+	if (MeshesLength > 0)
+	{
+		TArray<UStaticMeshComponent*> NewMeshArray;
+		for (const FStaticMeshArmorStruct& Struct : ArmorArry) {
+			UActorComponent* NewMesh = AddComponentByClass(UStaticMeshComponent::StaticClass(), true, FTransform(), false);
+			if (IsValid(NewMesh))
+			{
+				UStaticMeshComponent* StaticMesh = Cast<UStaticMeshComponent>(NewMesh);
+				StaticMesh->SetStaticMesh(Struct.ArmorStaticMesh);
+				StaticMesh->SetGenerateOverlapEvents(true);
+				StaticMesh->SetVisibility(true);
+				StaticMesh->SetRenderCustomDepth(true);
+				StaticMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+				StaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, Struct.AttachSocket);
+				NewMeshArray.Add(StaticMesh);
+			}
+		}
+		TArray<EBodyPart> BodyParts = FGeneralUtils::EquipmentSlotToBodyPart(EquipmentSlot);
+		FStaticMeshComponentArray NewMeshComponentArray;
+		NewMeshComponentArray.Meshes = NewMeshArray;
+		ArmorStaticMeshPiecesPerBodyPart.Add(BodyParts[0], NewMeshComponentArray);
+	}
+}
+
+void ABaseRpgCharacter::AttachArmorSkeletalMesh(TArray<USkeletalMesh*> Meshes, EEquipmentSlot EquipmentSlot, FItemData Item)
+{
+	UActorComponent* NewMeshComp = AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, FTransform(), false);
+	USkeletalMeshComponent* EquipmentSKMesh = Cast<USkeletalMeshComponent>(NewMeshComp);
+	EquipmentSKMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+	//EquipmentSKMesh->AddLocalRotation(FRotator(0, -90, 0));
+	if (Meshes.Num() > 0) {
+		USkeletalMesh* NewMesh = Item.ItemAsset->SkeletalMeshes[0];
+		EquipmentSKMesh->SetSkeletalMesh(Item.ItemAsset->SkeletalMeshes[0]);
+		EquipmentSKMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		EquipmentSKMesh->SetLeaderPoseComponent(GetMesh());
+		EquipmentSKMesh->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+		EquipmentSKMeshes.Add(Item.ItemGuid, EquipmentSKMesh);
+	}
+	TArray<EBodyPart> BodyParts = FGeneralUtils::EquipmentSlotToBodyPart(EquipmentSlot);
+	EquipmentComponent->EquipItem(Item, Item.ItemAsset->EquipmentSlot);
+	for (EBodyPart Part : BodyParts) {
+		FCoalatedProtectionMap NewMap = FCoalatedProtectionMap();
+		NewMap.InitializeMap();
+		if (BodyPartProtectionMap.Contains(Part)) {
+			TMap<EPhysicalDamageType, int> CurrentProtectionMap = BodyPartProtectionMap[Part].ProtectionMap;
+			int TotalCoverage = BodyPartProtectionMap[Part].Coverage + Item.ItemAsset->Coverage;
+			TMap<EPhysicalDamageType, int> CollatedMap = FGeneralUtils::CollateProtectionMaps(CurrentProtectionMap, Item.ItemAsset->ProtectionMap);
+			NewMap.Coverage = TotalCoverage;
+			NewMap.ProtectionMap = CollatedMap;
+			BodyPartProtectionMap.Add(Part, NewMap);
+		}
+		else {
+			NewMap.Coverage = Item.ItemAsset->Coverage;
+			NewMap.ProtectionMap = Item.ItemAsset->ProtectionMap;
+			BodyPartProtectionMap.Add(Part, NewMap);
+		}
+		int Coverage = BodyPartProtectionMap[Part].Coverage;
+		int Blunt = BodyPartProtectionMap[Part].ProtectionMap.FindRef(EPhysicalDamageType::EPDT_Blunt);
+	}
+}
+
 void ABaseRpgCharacter::EquipItem(FItemData Item)
 {
-	if (Item.ItemAsset->IsWeildable) {
+	if (!IsValid(Item.ItemAsset)) return;
+	if (Item.ItemAsset->ItemName.ToString() == "None") return;
+	if (Item.ItemAsset->IsWeildable) 
+	{
 		FName EquipSocket = Item.ItemAsset->GetEquipSocketName();
 		if (!Item.ItemAsset->UseSkeletalMesh) {
 			UStaticMeshComponent* EquipmentMesh = EquipmentMeshes.FindRef(Item.ItemGuid);
@@ -48,6 +116,10 @@ void ABaseRpgCharacter::EquipItem(FItemData Item)
 			}
 			else if (EquipSocket == FName("null")) {
 				EquipmentMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+			}
+			else if (!IsValid(EquipmentMesh))
+			{
+
 			}
 		}
 		else {
@@ -66,45 +138,16 @@ void ABaseRpgCharacter::EquipItem(FItemData Item)
 			}
 		}
 	}
+	// add static parts of armor
 	else if (Item.ItemAsset->IsWearable) {
-		if (Item.ItemAsset->UseSkeletalMesh) {
-			FTransform AdjustedTransform;
-			AdjustedTransform.SetLocation(FVector(0.f, 0.f, -92.f));
-			UActorComponent* NewMeshComp = AddComponentByClass(USkeletalMeshComponent::StaticClass(), false, AdjustedTransform, false);
-			USkeletalMeshComponent* EquipmentSKMesh = Cast<USkeletalMeshComponent>(NewMeshComp);
-			EquipmentSKMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-			EquipmentSKMesh->AddLocalRotation(FRotator(0, -90, 0));
-			if (Item.ItemAsset->SkeletalMeshes.Num() > 0) {
-				USkeletalMesh* NewMesh = Item.ItemAsset->SkeletalMeshes[0];
-				EquipmentSKMesh->SetSkeletalMesh(Item.ItemAsset->SkeletalMeshes[0]);
-				EquipmentSKMesh->SetLeaderPoseComponent(GetMesh());
-				EquipmentSKMeshes.Add(Item.ItemGuid, EquipmentSKMesh);
-			}
-			TArray<EBodyPart> BodyParts = FGeneralUtils::EquipmentSlotToBodyPart(Item.ItemAsset->EquipmentSlot);
-			EquipmentComponent->EquipItem(Item, Item.ItemAsset->EquipmentSlot);
-			for (EBodyPart Part : BodyParts) {
-				FCoalatedProtectionMap NewMap = FCoalatedProtectionMap();
-				NewMap.InitializeMap();
-				if (BodyPartProtectionMap.Contains(Part)) {
-					TMap<EPhysicalDamageType, int> CurrentProtectionMap = BodyPartProtectionMap[Part].ProtectionMap;
-					int TotalCoverage = BodyPartProtectionMap[Part].Coverage + Item.ItemAsset->Coverage;
-					TMap<EPhysicalDamageType, int> CollatedMap = FGeneralUtils::CollateProtectionMaps(CurrentProtectionMap, Item.ItemAsset->ProtectionMap);
-					NewMap.Coverage = TotalCoverage;
-					NewMap.ProtectionMap = CollatedMap;
-					BodyPartProtectionMap.Add(Part, NewMap);
-				}
-				else {
-					NewMap.Coverage = Item.ItemAsset->Coverage;
-					NewMap.ProtectionMap = Item.ItemAsset->ProtectionMap;
-					BodyPartProtectionMap.Add(Part, NewMap);
-				}
-				int Coverage = BodyPartProtectionMap[Part].Coverage;
-				int Blunt = BodyPartProtectionMap[Part].ProtectionMap.FindRef(EPhysicalDamageType::EPDT_Blunt);
-				if (GEngine) {
-					GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Black, "Coverage: " + FString::FromInt(Coverage));
-					GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, "Bluntn Protection: " + FString::FromInt(Blunt));
-				}
-			}
+		if (Item.ItemAsset->UseStaticMeshArray) 
+		{
+			ABaseRpgCharacter::AttachStaticArmorParts(Item.ItemAsset->StaticMeshArray, Item.ItemAsset->EquipmentSlot);
+		}
+		// create main skeletal mesh and attach it
+		if (Item.ItemAsset->UseSkeletalMesh) 
+		{
+			ABaseRpgCharacter::AttachArmorSkeletalMesh(Item.ItemAsset->SkeletalMeshes, Item.ItemAsset->EquipmentSlot, Item);
 		}
 	}
 }
@@ -156,33 +199,34 @@ void ABaseRpgCharacter::BaseDodge()
 
 void ABaseRpgCharacter::DodgeInDirection(EDodgeDirection DodgeDirection)
 {
-	CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_Dodging);
 	UAnimMontage* DodgeMontage = MontageManagerComponent->GetDodgeMontage(DodgeDirection);
 	if (IsValid(DodgeMontage)) {
-		CharacterStateComponent->SetCharacterCombatState(ECombatState::ECS_Dodging);
 		PlayAnimMontage(DodgeMontage);
 	}
 }
 
-void ABaseRpgCharacter::CreateOrDestroyEquipmentMeshes(FItemData NewItem, bool CreateOrDestroy)
+void ABaseRpgCharacter::CreateOrDestroyEquipmentMeshes(FItemData NewItem, bool CreateOrDestroy, bool EquipSocket, bool RightHand)
 {
-	if (CreateOrDestroy) {
-		UActorComponent* NewMesh = AddComponentByClass(UStaticMeshComponent::StaticClass(), true, FTransform(), false);
-		if (IsValid(NewMesh)) {
-			UStaticMeshComponent* StaticMesh = Cast<UStaticMeshComponent>(NewMesh);
-			if (IsValid(StaticMesh)) {
-				// create and attach mesh
-				StaticMesh->SetStaticMesh(NewItem.ItemAsset->BaseMeshes[0]);
-				StaticMesh->SetGenerateOverlapEvents(true);
-				StaticMesh->SetVisibility(true);
-				StaticMesh->SetRenderCustomDepth(true);
-				StaticMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-				StaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, NewItem.ItemAsset->GetUnequipSocketName());
-				EquipmentMeshes.Add(NewItem.ItemGuid, StaticMesh);
-			}
+	if (CreateOrDestroy) 
+	{
+		FGuid NameGuid = FGuid::NewGuid();
+		FString NewName = FString(NewItem.ItemAsset->ItemName.ToString() + NameGuid.ToString());
+		UStaticMeshComponent* StaticMesh = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), *NewName);
+		if (IsValid(StaticMesh)) 
+		{
+			StaticMesh->RegisterComponent();
+			StaticMesh->SetStaticMesh(NewItem.ItemAsset->BaseMeshes[0]);
+			StaticMesh->SetGenerateOverlapEvents(true);
+			StaticMesh->SetVisibility(true);
+			StaticMesh->SetRenderCustomDepth(true);
+			StaticMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+			FName SocketName = EquipSocket ? NewItem.ItemAsset->GetEquipSocketName() : NewItem.ItemAsset->GetUnequipSocketName();
+			StaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
+			EquipmentMeshes.Add(NewItem.ItemGuid, StaticMesh);
 		}
 	}
-	else {
+	else 
+	{
 		// destroy equipment mesh
 		EquipmentMeshes.FindRef(NewItem.ItemGuid)->DestroyComponent();
 		EquipmentMeshes.Remove(NewItem.ItemGuid);
@@ -328,7 +372,7 @@ bool ABaseRpgCharacter::RecieveAttack(FFinishedAttackStruct AttackData)
 			//	GEngine->AddOnScreenDebugMessage(-1, 50, FColor::Red, "VelcoityDamage: " + FString::FromInt(Velocity));
 			//	GEngine->AddOnScreenDebugMessage(-1, 50, FColor::White, "Precision Defense: " + FString::FromInt(Precision));
 			//}
-			if (TotalDamage < 0) {
+			if (TotalDamage > 0) {
 				CharacterStatusComponent->DamageBodyPart(HitBodyPart, FMath::Abs((float)TotalDamage),
 					(PrimaryDamageType != EPhysicalDamageType::EPDT_Blunt) && !PrecisionRoll);
 			}

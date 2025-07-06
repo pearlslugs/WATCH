@@ -26,7 +26,8 @@ public class VorpisEquipmentModule : ModuleRules
 			new string[]
 			{
 				"Core",
-            "VorpisItemsModule",
+				"VorpisItemsModule",
+				"VorpisWidgetInterfaceModule",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -39,8 +40,9 @@ public class VorpisEquipmentModule : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-            "VorpisItemsModule",
-				"UMG"
+				"VorpisItemsModule",
+                "VorpisWidgetInterfaceModule",
+                "UMG"
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

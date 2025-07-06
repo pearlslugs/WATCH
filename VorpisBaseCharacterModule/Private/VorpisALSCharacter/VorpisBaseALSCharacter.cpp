@@ -62,7 +62,6 @@ void AVorpisBaseALSCharacter::SetupPlayerInputComponent(UInputComponent* Input)
 	auto* EnhancedInput{ Cast<UEnhancedInputComponent>(Input) };
 	if (IsValid(EnhancedInput))
 	{
-		EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Input_OnMove);
 		EnhancedInput->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ThisClass::Input_OnSprint);
 		EnhancedInput->BindAction(WalkAction, ETriggerEvent::Triggered, this, &ThisClass::Input_OnWalk);
 		EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ThisClass::Input_OnCrouch);
